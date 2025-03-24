@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mazos de Cartas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes slideIn {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .mazo {
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        .mazo:hover {
+            transform: translateY(-10px);
+        }
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        #carta-actual {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+        .carta-comodines {
+            background: linear-gradient(135deg, #fff5b8 0%, #ffd6e9 100%) !important;
+            border: 12px solid black !important;
+            border-radius: 35px !important;
+            padding: 30px !important;
+        }
+        .carta-datos {
+            background-color: rgb(255, 102, 196) !important;
+            border: 12px solid black !important;
+            border-radius: 35px !important;
+            padding: 30px !important;
+        }
+        .carta-preguntas {
+            background-color: rgb(145, 229, 235) !important;
+            border: 12px solid black !important;
+            border-radius: 35px !important;
+            padding: 30px !important;
+        }
+        .carta-visual, .carta-alternativas, .carta-verdadero-falso {
+            background-color: rgb(145, 229, 235) !important;
+            border: 12px solid black !important;
+            border-radius: 35px !important;
+            padding: 30px !important;
+        }
+        #comodines {
+            background-image: url('img/parteTrasera/comodin.png');
+            border: 4px solid black;
+        }
+        #preguntas {
+            background-image: url('img/parteTrasera/pregunta.png');
+            border: 4px solid black;
+        }
+        #datos {
+            background-image: url('img/parteTrasera/datoCurioso.png');
+            border: 4px solid black;
+        }
+        .carta-titulo {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #1a365d;
+        }
+        .carta-texto {
+            font-size: clamp(1rem, 3vw, 1.25rem);
+            line-height: 1.6;
+            text-align: center;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-respuesta {
+            width: 100%;
+            padding: 1rem 2rem;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: white;
+            background-color: #2563eb;
+            border: none;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-respuesta:hover {
+            transform: scale(1.02);
+            background-color: #1d4ed8;
+        }
+        .respuesta {
+            font-size: clamp(1rem, 3vw, 1.25rem);
+            font-weight: 600;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: #2c5282;
+            background-color: #ebf8ff;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .opcion {
+            background-color: white;
+            border: 4px solid black;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .opcion:hover {
+            transform: scale(1.02);
+            background-color: #f3f4f6;
+        }
+        .contador-cartas {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-weight: 900;
+            text-align: center;
+            color: #1a365d;
+            margin-top: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            h1 {
+                font-size: 2rem !important;
+                margin-bottom: 2rem !important;
+            }
+            .flex {
+                flex-direction: column;
+                align-items: center;
+                gap: 2rem !important;
+            }
+            .mazo {
+                width: 150px !important;
+                height: 246px !important;
+            }
+            .carta-actual {
+                padding: 1rem;
+            }
+            .carta-titulo {
+                margin-bottom: 1rem;
+            }
+            .carta-texto {
+                padding: 0.75rem;
+                margin-bottom: 1rem;
+            }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .container {
+                padding: 2rem;
+            }
+            .mazo {
+                width: 170px !important;
+                height: 279px !important;
+            }
+            .flex {
+                gap: 4rem !important;
+            }
+        }
+        .btn-mostrar-respuesta {
+            background-color: #4299e1;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            cursor: pointer;
+        }
+        .btn-mostrar-respuesta:hover {
+            background-color: #3182ce;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-purple-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-5xl font-black text-center text-gray-800 mb-12">Mazos de Cartas</h1>
+        
+        <div class="flex justify-center gap-8 mb-12">
+            <div class="text-center">
+                <div class="mazo w-[195px] h-80 cursor-pointer" onclick="sacarCarta('comodines')">
+                    <div id="comodines" class="w-full h-full rounded-xl shadow-lg bg-cover bg-center border-4 border-black"></div>
+                </div>
+                <div id="contador-comodines" class="contador-cartas">Cartas: 0</div>
+            </div>
+            <div class="text-center">
+                <div class="mazo w-[195px] h-80 cursor-pointer" onclick="sacarCarta('preguntas')">
+                    <div id="preguntas" class="w-full h-full rounded-xl shadow-lg bg-cover bg-center border-4 border-black"></div>
+                </div>
+                <div id="contador-preguntas" class="contador-cartas">Cartas: 0</div>
+            </div>
+            <div class="text-center">
+                <div class="mazo w-[195px] h-80 cursor-pointer" onclick="sacarCarta('datos')">
+                    <div id="datos" class="w-full h-full rounded-xl shadow-lg bg-cover bg-center border-4 border-black"></div>
+                </div>
+                <div id="contador-datos" class="contador-cartas">Cartas: 0</div>
+            </div>
+        </div>
+
+        <div id="carta-actual" class="hidden">
+            <div class="carta-titulo"></div>
+            <div class="carta-texto"></div>
+            <div class="respuesta-input-container"></div>
+            <div class="respuesta hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        let mazos = {
+            comodines: [],
+            preguntas: [],
+            datos: []
+        };
+
+        function actualizarContadores() {
+            Object.keys(mazos).forEach(tipo => {
+                const contador = document.getElementById(`contador-${tipo}`);
+                contador.textContent = `Cartas: ${mazos[tipo].length}`;
+            });
+        }
+
+        // Función para procesar el texto y extraer las cartas
+        function procesarTexto(texto) {
+            const cartas = [];
+            const regex = /\{([^}]+)\}/g;
+            let match;
+            let totalCartas = 0;
+            let cartasProblematicas = 0;
+
+            while ((match = regex.exec(texto)) !== null) {
+                totalCartas++;
+                try {
+                    const cartaStr = '{' + match[1] + '}';
+                    const cartaLimpia = cartaStr
+                        .replace(/\n/g, ' ')
+                        .replace(/\r/g, '')
+                        .replace(/\t/g, ' ')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                    
+                    const carta = JSON.parse(cartaLimpia);
+                    cartas.push(carta);
+                } catch (e) {
+                    cartasProblematicas++;
+                    console.error(`Error en carta #${totalCartas}:`, e);
+                    console.error('Carta problemática:', match[0]);
+                    console.error('Posición del error:', e.position);
+                    if (e.position) {
+                        const contexto = match[0].substring(Math.max(0, e.position - 50), e.position + 50);
+                        console.error('Contexto del error:', contexto);
+                    }
+                }
+            }
+            
+            console.log(`Total de cartas encontradas: ${totalCartas}`);
+            console.log(`Cartas procesadas correctamente: ${cartas.length}`);
+            console.log(`Cartas con errores: ${cartasProblematicas}`);
+            
+            return cartas;
+        }
+
+        // Cargar los mazos
+        async function cargarMazos() {
+            try {
+                const comodinesResponse = await fetch('cartas/comodines.txt');
+                const preguntasResponse = await fetch('cartas/preguntas.txt');
+                const datosResponse = await fetch('cartas/datos.txt');
+
+                const comodinesTexto = await comodinesResponse.text();
+                const preguntasTexto = await preguntasResponse.text();
+                const datosTexto = await datosResponse.text();
+
+                mazos.comodines = procesarTexto(comodinesTexto);
+                mazos.preguntas = procesarTexto(preguntasTexto);
+                mazos.datos = procesarTexto(datosTexto);
+
+                console.log('Mazos cargados:', {
+                    comodines: mazos.comodines.length,
+                    preguntas: mazos.preguntas.length,
+                    datos: mazos.datos.length
+                });
+
+                actualizarContadores();
+            } catch (error) {
+                console.error('Error al cargar los mazos:', error);
+            }
+        }
+
+        function mostrarRespuesta(respuesta, esCorrecta) {
+            const respuestaDiv = document.querySelector('.respuesta');
+            respuestaDiv.textContent = esCorrecta ? '¡Correcto!' : 'Incorrecto';
+            respuestaDiv.className = `respuesta mt-6 p-4 rounded-lg ${esCorrecta ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+            respuestaDiv.style.display = 'block';
+
+            if (!esCorrecta) {
+                const respuestaCorrectaDiv = document.createElement('div');
+                respuestaCorrectaDiv.className = 'mt-2 text-sm italic text-gray-600';
+                respuestaCorrectaDiv.textContent = `La respuesta correcta era: ${respuesta}`;
+                respuestaDiv.appendChild(respuestaCorrectaDiv);
+            }
+        }
+
+        function sacarCarta(tipoMazo) {
+            if (mazos[tipoMazo].length === 0) {
+                alert('¡No quedan cartas en este mazo!');
+                return;
+            }
+
+            const indiceAleatorio = Math.floor(Math.random() * mazos[tipoMazo].length);
+            const carta = mazos[tipoMazo][indiceAleatorio];
+            const cartaActual = document.getElementById('carta-actual');
+            
+            // Limpiar todo el contenido y clases anteriores
+            cartaActual.className = '';
+            cartaActual.removeAttribute('style');
+            
+            // Aplicar las clases base
+            cartaActual.classList.add('slide-in');
+            
+            // Aplicar el estilo según el tipo de mazo
+            if (tipoMazo === 'comodines') {
+                cartaActual.classList.add('carta-comodines');
+            } else if (tipoMazo === 'datos') {
+                cartaActual.classList.add('carta-datos');
+            } else if (tipoMazo === 'preguntas') {
+                cartaActual.classList.add('carta-preguntas');
+            }
+            
+            // Mostrar la carta
+            cartaActual.style.display = 'block';
+            
+            // Establecer el nuevo contenido
+            const titulo = cartaActual.querySelector('.carta-titulo');
+            const texto = cartaActual.querySelector('.carta-texto');
+            const respuestaInputContainer = cartaActual.querySelector('.respuesta-input-container');
+            const respuesta = cartaActual.querySelector('.respuesta');
+            
+            titulo.textContent = '';
+            texto.textContent = '';
+            respuestaInputContainer.innerHTML = '';
+            respuesta.textContent = '';
+            respuesta.style.display = 'none';
+            respuesta.className = 'respuesta hidden';
+            
+            titulo.className = 'carta-titulo';
+            texto.className = 'carta-texto';
+            titulo.textContent = carta.nombre;
+            texto.textContent = carta.pregunta || carta.texto;
+
+            if (tipoMazo === 'preguntas') {
+                if (carta.tipo === 'Pregunta') {
+                    if (carta.imagenDelantera) {
+                        const imagenDiv = document.createElement('img');
+                        imagenDiv.src = carta.imagenDelantera;
+                        imagenDiv.className = 'w-full h-auto rounded-lg shadow-md mb-6';
+                        respuestaInputContainer.appendChild(imagenDiv);
+                    }
+
+                    const btnRevelar = document.createElement('button');
+                    btnRevelar.className = 'btn-respuesta';
+                    btnRevelar.textContent = 'Mostrar Respuesta';
+                    btnRevelar.onclick = () => {
+                        respuesta.textContent = carta.respuesta;
+                        respuesta.className = 'respuesta';
+                        respuesta.style.display = 'block';
+                        btnRevelar.style.display = 'none';
+                    };
+                    respuestaInputContainer.appendChild(btnRevelar);
+                } else if (carta.tipo === 'Verdadero/Falso') {
+                    const vfDiv = document.createElement('div');
+                    vfDiv.className = 'flex justify-center gap-8 mt-6';
+                    vfDiv.innerHTML = `
+                        <button class="bg-green-500 hover:bg-green-600 text-white font-black text-xl py-4 px-12 rounded-lg transition duration-300 transform hover:scale-105" onclick="verificarRespuesta(true, '${carta.respuesta}')">Verdadero</button>
+                        <button class="bg-red-500 hover:bg-red-600 text-white font-black text-xl py-4 px-12 rounded-lg transition duration-300 transform hover:scale-105" onclick="verificarRespuesta(false, '${carta.respuesta}')">Falso</button>
+                    `;
+                    respuestaInputContainer.appendChild(vfDiv);
+                } else if (carta.alternativas) {
+                    const opcionesDiv = document.createElement('div');
+                    opcionesDiv.className = 'space-y-4 mt-6';
+                    carta.alternativas.forEach(alternativa => {
+                        const opcion = document.createElement('div');
+                        opcion.className = 'opcion';
+                        opcion.textContent = alternativa;
+                        opcion.onclick = () => verificarRespuesta(alternativa, carta.respuesta);
+                        opcionesDiv.appendChild(opcion);
+                    });
+                    respuestaInputContainer.appendChild(opcionesDiv);
+                }
+            }
+
+            mazos[tipoMazo].splice(indiceAleatorio, 1);
+            actualizarContadores();
+        }
+
+        function verificarRespuesta(respuestaUsuario, respuestaCorrecta) {
+            // Convertir la respuesta del usuario a string y normalizarla
+            const respuestaUsuarioStr = respuestaUsuario.toString().toLowerCase().trim();
+            const respuestaCorrectaStr = respuestaCorrecta.toString().toLowerCase().trim();
+            
+            // Manejar casos especiales para Verdadero/Falso
+            const esCorrecta = (respuestaUsuarioStr === 'true' && respuestaCorrectaStr === 'verdadero') ||
+                              (respuestaUsuarioStr === 'false' && respuestaCorrectaStr === 'falso') ||
+                              respuestaUsuarioStr === respuestaCorrectaStr;
+            
+            mostrarRespuesta(respuestaCorrecta, esCorrecta);
+
+            // Deshabilitar botones después de responder
+            document.querySelectorAll('.opcion, .btn-vf').forEach(elemento => {
+                elemento.style.pointerEvents = 'none';
+                if (elemento.textContent === respuestaCorrecta) {
+                    elemento.classList.add('correcta');
+                } else if (elemento.classList.contains('opcion')) {
+                    elemento.classList.add('incorrecta');
+                }
+            });
+        }
+
+        // Cargar los mazos cuando se inicie la página
+        cargarMazos();
+    </script>
+</body>
+</html> 

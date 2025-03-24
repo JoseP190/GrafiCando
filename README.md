@@ -77,7 +77,7 @@ Este proyecto está bajo la Licencia MIT - mira el archivo `LICENSE` para detall
 
 ## Autores ✨
 
-- Tu nombre - [Tu GitHub](https://github.com/tu-usuario)
+- JoseP190
 
 ## Agradecimientos 🙏
 

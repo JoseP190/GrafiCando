@@ -81,5 +81,4 @@ Este proyecto está bajo la Licencia MIT - mira el archivo `LICENSE` para detall
 
 ## Agradecimientos 🙏
 
-- A todos los profesores y estudiantes que han contribuido con ideas
-- A la comunidad de desarrollo por las herramientas y recursos utilizados 
+- Al Docente de Matemáticas Vicente Alfaro Tapia por la idea y los recursos visuales

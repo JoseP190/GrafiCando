@@ -3434,42 +3434,34 @@ function usarComodin(carta, nombreJugador) {
     // Mostrar efecto visual de selección
     mostrarEfectoSeleccionComodin(carta);
     
-    // Aplicar el efecto del comodín según su tipo
+    // Manejar el comodín de prohibición de manera especial
     const nombreComodin = carta.nombre.toLowerCase();
+    if (nombreComodin === '¡no!,¡te lo prohíbo!') {
+        mostrarMensaje('🚫 Este comodín solo se puede usar como reacción a otro comodín', 'info');
+        return;
+    }
     
-    switch (nombreComodin) {
-        case '¡ganas un punto gratis!':
-            aplicarPuntoGratis(nombreJugador, carta);
-            break;
-            
-        case '¡resta un punto a un contrincante!':
-            aplicarRestarPunto(nombreJugador, carta);
-            break;
-            
-        case '¡reversa!':
-            aplicarReversa(nombreJugador, carta);
-            break;
-            
-        case '¡eres un ladrón de comodines!':
-            aplicarLadronComodines(nombreJugador, carta);
-            break;
-            
-        case 'escapa de la cárcel':
-            aplicarEscapeCarcel(nombreJugador, carta);
-            break;
-            
-        case 'construyendo el comodín':
-            aplicarConstruirComodin(nombreJugador, carta);
-            break;
-            
-        case '¡no!,¡te lo prohíbo!':
-            // Este comodín se maneja de forma especial (reactivo)
-            mostrarMensaje('Este comodín solo se puede usar como reacción a otro comodín', 'info');
-            return;
-            
-        default:
-            mostrarMensaje('Tipo de comodín no reconocido', 'error');
-            return;
+    // Verificar si hay jugadores con comodín de prohibición
+    const jugadoresConProhibicion = hayJugadoresConProhibicion(nombreJugador);
+    
+    if (jugadoresConProhibicion.length > 0) {
+        // Hay jugadores que pueden interceptar
+        console.log('🚫 DEBUG: Hay jugadores con prohibición, mostrando popup de intercepción');
+        
+        // Guardar estado para el sistema de prohibición
+        comodinEnProceso = carta;
+        jugadorUsandoComodin = nombreJugador;
+        
+        // Remover temporalmente el comodín del inventario
+        removerComodinDelInventario(nombreJugador, carta);
+        
+        // Mostrar popup de intercepción
+        mostrarPopupProhibicion(jugadoresConProhibicion, carta, nombreJugador);
+        
+    } else {
+        // No hay interceptación posible, ejecutar directamente
+        console.log('✅ DEBUG: No hay intercepción, ejecutando comodín directamente');
+        ejecutarEfectoComodin(carta, nombreJugador);
     }
 }
 
@@ -3878,6 +3870,17 @@ function agregarComodinAlInventario(nombreJugador, comodin) {
 
 // Función para mostrar temporalmente un comodín obtenido
 function mostrarCartaComodinTemporal(carta, nombreJugador) {
+    // Variable de control para evitar doble llamado a siguienteTurno
+    let turnoYaCambiado = false;
+    
+    // Función auxiliar para cambiar turno solo una vez
+    const cambiarTurnoSiNoSeHizo = () => {
+        if (!turnoYaCambiado) {
+            turnoYaCambiado = true;
+            siguienteTurno();
+        }
+    };
+    
     // Crear overlay temporal para mostrar el comodín obtenido
     const overlay = document.createElement('div');
     overlay.style.cssText = `
@@ -3931,7 +3934,7 @@ function mostrarCartaComodinTemporal(carta, nombreJugador) {
             </div>
         </div>
         <div style="font-size: 0.9rem; opacity: 0.8; font-style: italic;">
-            El comodín se ha agregado a tu inventario. ¡Continúa tu turno!
+            Este comodín se agregó a tu inventario. ¡Úsalo sabiamente!
         </div>
     `;
     
@@ -3941,17 +3944,19 @@ function mostrarCartaComodinTemporal(carta, nombreJugador) {
     // Crear efectos de partículas de celebración
     crearEfectosComodinObtenido(modal);
     
-    // Auto-cerrar después de 3 segundos - SOLO cerrar el modal, NO cambiar turno
+    // Auto-cerrar después de 8 segundos y pasar al siguiente turno
     setTimeout(() => {
         overlay.style.opacity = '0';
         setTimeout(() => {
             if (document.body.contains(overlay)) {
                 document.body.removeChild(overlay);
             }
+            // Pasar al siguiente turno después de obtener el comodín (solo una vez)
+            cambiarTurnoSiNoSeHizo();
         }, 300);
-    }, 3000);
+    }, 8000);
     
-    // También permitir cerrar con clic - SOLO cerrar el modal, NO cambiar turno
+    // También permitir cerrar con clic y pasar al siguiente turno
     overlay.onclick = (e) => {
         if (e.target === overlay) {
             overlay.style.opacity = '0';
@@ -3959,6 +3964,8 @@ function mostrarCartaComodinTemporal(carta, nombreJugador) {
                 if (document.body.contains(overlay)) {
                     document.body.removeChild(overlay);
                 }
+                // Pasar al siguiente turno al cerrar manualmente (solo una vez)
+                cambiarTurnoSiNoSeHizo();
             }, 300);
         }
     };
@@ -4025,6 +4032,17 @@ function crearEfectosComodinObtenido(elemento) {
 
 // Función para mostrar temporalmente un comodín que se aplicó inmediatamente
 function mostrarCartaComodinInstantaneo(carta, nombreJugador, mensaje) {
+    // Variable de control para evitar doble llamado a siguienteTurno
+    let turnoYaCambiado = false;
+    
+    // Función auxiliar para cambiar turno solo una vez
+    const cambiarTurnoSiNoSeHizo = () => {
+        if (!turnoYaCambiado) {
+            turnoYaCambiado = true;
+            siguienteTurno();
+        }
+    };
+    
     // Crear overlay temporal para mostrar el comodín aplicado
     const overlay = document.createElement('div');
     overlay.style.cssText = `
@@ -4081,7 +4099,7 @@ function mostrarCartaComodinInstantaneo(carta, nombreJugador, mensaje) {
             </div>
         </div>
         <div style="font-size: 0.9rem; opacity: 0.8; font-style: italic;">
-            El efecto se aplicó automáticamente. ¡Continúa tu turno!
+            El efecto se aplicó automáticamente. Pasando al siguiente turno...
         </div>
     `;
     
@@ -4091,17 +4109,19 @@ function mostrarCartaComodinInstantaneo(carta, nombreJugador, mensaje) {
     // Crear efectos de partículas especiales para comodín instantáneo
     crearEfectosComodinInstantaneo(modal);
     
-    // Auto-cerrar después de 2.5 segundos (más rápido que el normal)
+    // Auto-cerrar después de 3 segundos y pasar al siguiente turno
     setTimeout(() => {
         overlay.style.opacity = '0';
         setTimeout(() => {
             if (document.body.contains(overlay)) {
                 document.body.removeChild(overlay);
             }
+            // Pasar al siguiente turno después del efecto instantáneo (solo una vez)
+            cambiarTurnoSiNoSeHizo();
         }, 300);
-    }, 2500);
+    }, 3000);
     
-    // También permitir cerrar con clic
+    // También permitir cerrar con clic y pasar al siguiente turno
     overlay.onclick = (e) => {
         if (e.target === overlay) {
             overlay.style.opacity = '0';
@@ -4109,6 +4129,8 @@ function mostrarCartaComodinInstantaneo(carta, nombreJugador, mensaje) {
                 if (document.body.contains(overlay)) {
                     document.body.removeChild(overlay);
                 }
+                // Pasar al siguiente turno al cerrar manualmente (solo una vez)
+                cambiarTurnoSiNoSeHizo();
             }, 300);
         }
     };
@@ -4749,3 +4771,4 @@ function ejecutarEfectoComodin(carta, nombreJugador) {
             return;
     }
 }
+

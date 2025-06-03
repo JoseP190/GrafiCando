@@ -275,10 +275,24 @@ function crearImagenesCartas(carta) {
 }
 
 function sacarCarta(tipoMazo) {
+    // ===== VALIDACIÓN: SOLO UNA CARTA POR TURNO =====
+    if (cartaSacadaEnTurno) {
+        mostrarMensaje('⛔ Ya sacaste una carta en este turno. Espera tu siguiente turno.', 'error');
+        return;
+    }
+    
     if (mazos[tipoMazo].length === 0) {
         mostrarMensajeVacio(tipoMazo);
         return;
     }
+
+    // Marcar que ya se sacó una carta en este turno
+    cartaSacadaEnTurno = true;
+    
+    // Deshabilitar mazos para evitar sacar más cartas
+    deshabilitarMazos();
+    
+    console.log('🃏 DEBUG: Carta sacada - turno bloqueado hasta siguiente jugador');
 
     // Detener contador anterior si existe
     detenerContador();
@@ -287,7 +301,38 @@ function sacarCarta(tipoMazo) {
     preguntaRespondida = false;
 
     const indiceAleatorio = Math.floor(Math.random() * mazos[tipoMazo].length);
-    const carta = mazos[tipoMazo][indiceAleatorio];
+    const carta = mazos[tipoMazo].splice(indiceAleatorio, 1)[0]; // Remover carta del mazo
+    
+    // ===== LÓGICA ESPECIAL PARA COMODINES =====
+    if (tipoMazo === 'comodines') {
+        const jugadorActual = jugadores[turnoActual];
+        if (jugadorActual) {
+            // Actualizar contador después de remover la carta del mazo
+            actualizarContadores();
+            
+            // Verificar si es un comodín de uso inmediato
+            const nombreComodin = carta.nombre.toLowerCase();
+            
+            if (nombreComodin === '¡ganas un punto gratis!') {
+                // Aplicar efecto inmediatamente - no guardar en inventario
+                modificarPuntuacion(jugadorActual, 1);
+                actualizarPanelJugadores();
+                
+                // Mostrar mensaje de punto ganado
+                mostrarMensaje(`🌟 ${jugadorActual} ganó 1 punto gratis inmediatamente! Total: ${puntuaciones[jugadorActual]}`, 'success');
+                crearEfectosPuntuacion(jugadorActual, '+1', 'positivo');
+                
+                // Mostrar carta brevemente indicando que se aplicó
+                mostrarCartaComodinInstantaneo(carta, jugadorActual, 'Punto aplicado inmediatamente');
+                return;
+            } else {
+                // Otros comodines se guardan en el inventario
+                agregarComodinAlInventario(jugadorActual, carta);
+                mostrarCartaComodinTemporal(carta, jugadorActual);
+                return;
+            }
+        }
+    }
     
     // Guardar datos de la carta actual globalmente
     window.cartaActualData = carta;
@@ -647,6 +692,11 @@ let jugadores = [];
 let turnoActual = 0;
 let puntuaciones = {}; // Nuevo sistema de puntuaciones
 
+// Sistema de inventario de comodines para cada jugador
+let inventariosComodines = {}; // Almacena el inventario de comodines de cada jugador
+let mazoDescartados = []; // Cartas de comodín descartadas que pueden reutilizarse
+let orden = 1; // 1 = normal, -1 = reversa (para el efecto reversa)
+
 // Sistema de contador de tiempo
 let contadorActivo = false;
 let tiempoRestante = 45;
@@ -655,6 +705,15 @@ let tiempoInicialContador = 45;
 
 // Variable para controlar respuestas múltiples
 let preguntaRespondida = false;
+
+// Variable para controlar una carta por turno
+let cartaSacadaEnTurno = false;
+
+// Variables para el sistema de prohibición/intercepción de comodines
+let comodinEnProceso = null;
+let jugadorUsandoComodin = null;
+let esperandoProhibicion = false;
+let tiempoLimiteProhibicion = null;
 
 // Modal de eliminación
 let jugadorAEliminar = null;
@@ -860,6 +919,33 @@ function confirmarOrden() {
     document.body.style.overflow = 'auto';
 }
 
+// Función para dar comodines iniciales de prueba (eliminar en producción)
+function darComodinesIniciales() {
+    // Solo dar comodines si hay comodines disponibles en el mazo
+    if (mazos.comodines.length === 0) return;
+    
+    jugadores.forEach(nombreJugador => {
+        // Dar 2-3 comodines aleatorios a cada jugador para pruebas
+        const cantidadComodines = Math.floor(Math.random() * 2) + 2; // 2 o 3 comodines
+        
+        for (let i = 0; i < cantidadComodines && mazos.comodines.length > 0; i++) {
+            const indiceAleatorio = Math.floor(Math.random() * mazos.comodines.length);
+            const comodin = mazos.comodines.splice(indiceAleatorio, 1)[0];
+            
+            if (!inventariosComodines[nombreJugador]) {
+                inventariosComodines[nombreJugador] = [];
+            }
+            inventariosComodines[nombreJugador].push(comodin);
+        }
+    });
+    
+    // Actualizar contadores de cartas
+    actualizarContadores();
+    
+    // Mostrar mensaje informativo
+    mostrarMensaje('¡Cada jugador recibió comodines iniciales para empezar! 🃏', 'info');
+}
+
 function actualizarPanelJugadores() {
     const listaJugadores = document.getElementById('listaJugadores');
     listaJugadores.innerHTML = '';
@@ -868,6 +954,10 @@ function actualizarPanelJugadores() {
     jugadores.forEach(jugador => {
         if (puntuaciones[jugador] === undefined) {
             puntuaciones[jugador] = 0;
+        }
+        // Inicializar inventario de comodines si no existe
+        if (inventariosComodines[jugador] === undefined) {
+            inventariosComodines[jugador] = [];
         }
     });
     
@@ -921,6 +1011,9 @@ function actualizarPanelJugadores() {
                 <div class="jugador-puntuacion">
                     💎 ${puntuacion} ${puntuacion === 1 ? 'punto' : 'puntos'}
                 </div>
+                <div class="comodines-inventario">
+                    ${generarVisualizacionComodines(nombre)}
+                </div>
             </div>
             <div class="jugador-ranking">#${rankingIndex + 1}</div>
             <button class="btn-remover-jugador" onclick="removerJugadorEnPartida(${indiceOriginal})" title="Eliminar jugador">×</button>
@@ -928,6 +1021,59 @@ function actualizarPanelJugadores() {
         item.id = `jugador-${indiceOriginal}`;
         listaJugadores.appendChild(item);
     });
+}
+
+// Función para generar la visualización de comodines en miniatura
+function generarVisualizacionComodines(nombreJugador) {
+    const inventario = inventariosComodines[nombreJugador] || [];
+    
+    if (inventario.length === 0) {
+        return '<div class="sin-comodines">🃏 Sin comodines</div>';
+    }
+    
+    // Contabilizar comodines por tipo
+    const conteoComodines = {};
+    const comodinesPorTipo = {};
+    inventario.forEach(comodin => {
+        const tipo = comodin.nombre.toLowerCase();
+        conteoComodines[tipo] = (conteoComodines[tipo] || 0) + 1;
+        if (!comodinesPorTipo[tipo]) {
+            comodinesPorTipo[tipo] = comodin; // Guardar una instancia para mostrar detalles
+        }
+    });
+    
+    // Crear representación visual en miniatura
+    let visualizacion = '<div class="comodines-lista">';
+    
+    Object.entries(conteoComodines).forEach(([tipo, cantidad]) => {
+        const icono = obtenerIconoComodin(tipo);
+        const comodinData = comodinesPorTipo[tipo];
+        
+        visualizacion += `
+            <div class="comodin-miniatura" title="${tipo}" onclick="mostrarComodinVisualizacion('${nombreJugador}', '${tipo}')">
+                <span class="comodin-icono">${icono}</span>
+                ${cantidad > 1 ? `<span class="comodin-cantidad">${cantidad}</span>` : ''}
+            </div>
+        `;
+    });
+    
+    visualizacion += '</div>';
+    return visualizacion;
+}
+
+// Función para obtener el ícono según el tipo de comodín
+function obtenerIconoComodin(tipo) {
+    const iconos = {
+        '¡no!,¡te lo prohíbo!': '🚫',
+        '¡ganas un punto gratis!': '⭐',
+        '¡resta un punto a un contrincante!': '💥',
+        '¡reversa!': '🔄',
+        '¡eres un ladrón de comodines!': '🦹',
+        'escapa de la cárcel': '🔓',
+        'construyendo el comodín': '🔨'
+    };
+    
+    return iconos[tipo] || '🃏';
 }
 
 function confirmarNuevoJugador() {
@@ -1002,6 +1148,9 @@ function reordenarEnPartida() {
 
 function siguienteTurno() {
     console.log('🎮 DEBUG siguienteTurno(): INICIANDO función');
+    
+    // Reanudar turno (permitir sacar una nueva carta)
+    reanudarTurno();
     
     // Validar que hay jugadores
     if (jugadores.length === 0) {
@@ -1334,7 +1483,8 @@ function mostrarPopupTurno() {
     
     // Actualizar contenido del popup
     numero.textContent = turnoActual + 1;
-    jugador.textContent = jugadores[turnoActual];
+    const nombreJugadorActual = jugadores[turnoActual];
+    jugador.textContent = nombreJugadorActual;
     
     // Mensajes variados para hacer más dinámico
     const mensajes = [
@@ -1349,12 +1499,84 @@ function mostrarPopupTurno() {
     
     mensaje.textContent = mensajes[Math.floor(Math.random() * mensajes.length)];
     
+    // Cargar comodines del jugador actual
+    cargarComodinesEnPopup(nombreJugadorActual);
+    
     // Mostrar popup con efectos
     overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
     
     // Crear efectos de brillo
     crearEfectosBrillo();
+}
+
+// Función para cargar los comodines del jugador en el popup
+function cargarComodinesEnPopup(nombreJugador) {
+    const listaComodines = document.getElementById('popupComodinesLista');
+    const inventario = inventariosComodines[nombreJugador] || [];
+    
+    if (inventario.length === 0) {
+        listaComodines.innerHTML = `
+            <div class="popup-sin-comodines">
+                🃏 No tienes comodines disponibles
+            </div>
+        `;
+        return;
+    }
+    
+    // Agrupar comodines por tipo para mostrar cantidad
+    const comodinesAgrupados = {};
+    inventario.forEach(comodin => {
+        const key = comodin.nombre.toLowerCase();
+        if (!comodinesAgrupados[key]) {
+            comodinesAgrupados[key] = {
+                carta: comodin,
+                cantidad: 0
+            };
+        }
+        comodinesAgrupados[key].cantidad++;
+    });
+    
+    // Crear elementos HTML para cada tipo de comodín
+    listaComodines.innerHTML = '';
+    Object.entries(comodinesAgrupados).forEach(([tipo, data]) => {
+        const comodinElement = document.createElement('div');
+        comodinElement.className = 'popup-comodin';
+        comodinElement.onclick = () => usarComodin(data.carta, nombreJugador);
+        
+        const icono = obtenerIconoComodin(tipo);
+        const nombreSimplificado = simplificarNombreComodin(data.carta.nombre);
+        
+        comodinElement.innerHTML = `
+            <div class="popup-comodin-icono">${icono}</div>
+            <div class="popup-comodin-nombre">${nombreSimplificado}</div>
+            ${data.cantidad > 1 ? `<div class="comodin-cantidad">${data.cantidad}</div>` : ''}
+        `;
+        
+        listaComodines.appendChild(comodinElement);
+    });
+}
+
+// Función para simplificar nombres de comodines para la UI
+function simplificarNombreComodin(nombre) {
+    const nombres = {
+        '¡NO!,¡TE LO PROHÍBO!': 'Prohibir',
+        '¡ganas un punto gratis!': 'Punto Gratis',
+        '¡resta un punto a un contrincante!': 'Restar Punto',
+        '¡reversa!': 'Reversa',
+        '¡eres un ladrón de comodines!': 'Ladrón',
+        'ESCAPA DE LA CÁRCEL': 'Escapar',
+        'construyendo el comodín': 'Construir'
+    };
+    
+    return nombres[nombre] || nombre;
+}
+
+// Función para continuar sin usar comodín
+function continuarSinComodin() {
+    cerrarPopupTurno();
+    // Asegurar que los mazos estén habilitados para el nuevo turno
+    habilitarMazos();
 }
 
 function cerrarPopupTurno() {
@@ -3188,6 +3410,1365 @@ document.addEventListener('keydown', function(e) {
         else if (document.getElementById('imagenModalOverlay') && document.getElementById('imagenModalOverlay').style.display === 'flex') {
             cerrarImagenModal();
         }
+        // Cerrar modal de visualización de comodín
+        else if (document.querySelector('.comodin-visualizacion-overlay')) {
+            cerrarComodinVisualizacion();
+        }
+        // Cerrar popup de prohibición
+        else if (document.getElementById('prohibicionOverlay')) {
+            permitirComodin(); // Al cerrar con Escape, se permite el comodín
+        }
     }
 });
+
+// ========== SISTEMA DE USO DE COMODINES ==========
+
+// Función principal para usar un comodín
+function usarComodin(carta, nombreJugador) {
+    // Verificar que el jugador tiene el comodín
+    if (!tieneComodin(nombreJugador, carta)) {
+        mostrarMensaje('No tienes este comodín disponible', 'error');
+        return;
+    }
+    
+    // Mostrar efecto visual de selección
+    mostrarEfectoSeleccionComodin(carta);
+    
+    // Manejar el comodín de prohibición de manera especial
+    const nombreComodin = carta.nombre.toLowerCase();
+    if (nombreComodin === '¡no!,¡te lo prohíbo!') {
+        mostrarMensaje('🚫 Este comodín solo se puede usar como reacción a otro comodín', 'info');
+        return;
+    }
+    
+    // Verificar si hay jugadores con comodín de prohibición
+    const jugadoresConProhibicion = hayJugadoresConProhibicion(nombreJugador);
+    
+    if (jugadoresConProhibicion.length > 0) {
+        // Hay jugadores que pueden interceptar
+        console.log('🚫 DEBUG: Hay jugadores con prohibición, mostrando popup de intercepción');
+        
+        // Guardar estado para el sistema de prohibición
+        comodinEnProceso = carta;
+        jugadorUsandoComodin = nombreJugador;
+        
+        // Remover temporalmente el comodín del inventario
+        removerComodinDelInventario(nombreJugador, carta);
+        
+        // Mostrar popup de intercepción
+        mostrarPopupProhibicion(jugadoresConProhibicion, carta, nombreJugador);
+        
+    } else {
+        // No hay interceptación posible, ejecutar directamente
+        console.log('✅ DEBUG: No hay intercepción, ejecutando comodín directamente');
+        ejecutarEfectoComodin(carta, nombreJugador);
+    }
+}
+
+// Función para verificar si un jugador tiene un comodín específico
+function tieneComodin(nombreJugador, carta) {
+    const inventario = inventariosComodines[nombreJugador] || [];
+    return inventario.some(comodin => 
+        comodin.nombre === carta.nombre && comodin.id === carta.id
+    );
+}
+
+// Función para remover un comodín del inventario
+function removerComodinDelInventario(nombreJugador, carta) {
+    const inventario = inventariosComodines[nombreJugador] || [];
+    const index = inventario.findIndex(comodin => 
+        comodin.nombre === carta.nombre && comodin.id === carta.id
+    );
+    
+    if (index !== -1) {
+        return inventario.splice(index, 1)[0];
+    }
+    return null;
+}
+
+// Función para mostrar efecto visual de selección
+function mostrarEfectoSeleccionComodin(carta) {
+    // Encontrar el elemento del comodín en el popup
+    const comodines = document.querySelectorAll('.popup-comodin');
+    comodines.forEach(element => {
+        element.classList.add('seleccionado');
+    });
+    
+    // Mostrar mensaje de uso
+    mostrarMensaje(`🃏 Has usado: ${simplificarNombreComodin(carta.nombre)}`, 'success');
+}
+
+// ========== IMPLEMENTACIÓN DE EFECTOS DE COMODINES ==========
+
+// 1. Punto Gratis - Suma 1 punto al jugador
+function aplicarPuntoGratis(nombreJugador, carta) {
+    // Remover comodín del inventario
+    removerComodinDelInventario(nombreJugador, carta);
+    
+    // Agregar punto
+    modificarPuntuacion(nombreJugador, 1);
+    
+    // Descartar carta (no se devuelve al mazo)
+    mostrarMensaje(`${nombreJugador} ganó 1 punto gratis! 🌟`, 'success');
+    
+    // Actualizar UI y continuar
+    actualizarPanelJugadores();
+    setTimeout(() => {
+        cerrarPopupTurno();
+    }, 1500);
+}
+
+// 2. Restar Punto - Resta 1 punto a otro jugador
+function aplicarRestarPunto(nombreJugador, carta) {
+    // Cerrar popup de turno antes de mostrar selector
+    cerrarPopupTurno();
+    
+    // Pequeño delay para que se cierre suavemente
+    setTimeout(() => {
+        // Mostrar selector de jugadores objetivo
+        mostrarSelectorJugadores(nombreJugador, (jugadorObjetivo) => {
+            if (puntuaciones[jugadorObjetivo] > 0) {
+                // Remover comodín del inventario
+                removerComodinDelInventario(nombreJugador, carta);
+                
+                // Restar punto
+                modificarPuntuacion(jugadorObjetivo, -1);
+                
+                mostrarMensaje(`${nombreJugador} le restó 1 punto a ${jugadorObjetivo}! 💥`, 'warning');
+                
+                // Actualizar UI y continuar
+                actualizarPanelJugadores();
+                setTimeout(() => {
+                    cerrarPopupTurno();
+                }, 1500);
+            } else {
+                mostrarMensaje(`${jugadorObjetivo} no tiene puntos para restar`, 'info');
+            }
+        }, 'Elige a quién restarle un punto:');
+    }, 300);
+}
+
+// 3. Reversa - Cambia el orden de turnos
+function aplicarReversa(nombreJugador, carta) {
+    // Remover comodín del inventario
+    removerComodinDelInventario(nombreJugador, carta);
+    
+    // Cambiar orden de turnos
+    orden *= -1;
+    
+    // Invertir array de jugadores para simular el efecto reversa
+    jugadores.reverse();
+    
+    // Ajustar turno actual
+    turnoActual = jugadores.length - 1 - turnoActual;
+    
+    mostrarMensaje(`${nombreJugador} cambió el orden de turnos! 🔄`, 'info');
+    
+    // Actualizar UI y continuar
+    actualizarPanelJugadores();
+    setTimeout(() => {
+        cerrarPopupTurno();
+    }, 1500);
+}
+
+// 4. Ladrón de Comodines - Roba un comodín aleatorio
+function aplicarLadronComodines(nombreJugador, carta) {
+    // Buscar jugadores con comodines
+    const jugadoresConComodines = jugadores.filter(jugador => 
+        jugador !== nombreJugador && 
+        (inventariosComodines[jugador] || []).length > 0
+    );
+    
+    if (jugadoresConComodines.length === 0) {
+        mostrarMensaje('No hay jugadores con comodines para robar', 'info');
+        return;
+    }
+    
+    // Cerrar popup de turno antes de mostrar selector
+    cerrarPopupTurno();
+    
+    // Pequeño delay para que se cierre suavemente
+    setTimeout(() => {
+        // Mostrar selector de jugadores objetivo
+        mostrarSelectorJugadores(nombreJugador, (jugadorObjetivo) => {
+            const inventarioObjetivo = inventariosComodines[jugadorObjetivo] || [];
+            
+            if (inventarioObjetivo.length === 0) {
+                mostrarMensaje(`${jugadorObjetivo} no tiene comodines para robar`, 'info');
+                return;
+            }
+            
+            // Robar comodín aleatorio
+            const indiceAleatorio = Math.floor(Math.random() * inventarioObjetivo.length);
+            const comodinRobado = inventarioObjetivo.splice(indiceAleatorio, 1)[0];
+            
+            // Agregar al inventario del ladrón
+            if (!inventariosComodines[nombreJugador]) {
+                inventariosComodines[nombreJugador] = [];
+            }
+            inventariosComodines[nombreJugador].push(comodinRobado);
+            
+            // Remover comodín usado del inventario
+            removerComodinDelInventario(nombreJugador, carta);
+            
+            // Descartar carta usada
+            mostrarMensaje(`${nombreJugador} le robó un comodín a ${jugadorObjetivo}! 🦹`, 'warning');
+            
+            // Actualizar UI y continuar
+            actualizarPanelJugadores();
+            setTimeout(() => {
+                cerrarPopupTurno();
+            }, 1500);
+            
+        }, 'Elige a quién robarle un comodín:', jugadoresConComodines);
+    }, 300);
+}
+
+// 5. Escapa de la Cárcel - Efecto especial para salir de la cárcel
+function aplicarEscapeCarcel(nombreJugador, carta) {
+    // Este comodín se usa cuando el jugador está en la cárcel
+    // Por ahora solo mostramos el efecto, la implementación completa dependería del sistema de cárcel
+    
+    // Remover comodín del inventario
+    removerComodinDelInventario(nombreJugador, carta);
+    
+    mostrarMensaje(`${nombreJugador} usó "Escapa de la Cárcel"! 🔓`, 'success');
+    
+    // Actualizar UI y continuar
+    actualizarPanelJugadores();
+    setTimeout(() => {
+        cerrarPopupTurno();
+    }, 1500);
+}
+
+// 6. Construyendo el Comodín - Necesita 2 copias para obtener un comodín aleatorio
+function aplicarConstruirComodin(nombreJugador, carta) {
+    const inventario = inventariosComodines[nombreJugador] || [];
+    
+    // Contar cuántas copias de "construyendo el comodín" tiene
+    const copiasConstruir = inventario.filter(comodin => 
+        comodin.nombre.toLowerCase() === 'construyendo el comodín'
+    ).length;
+    
+    if (copiasConstruir < 2) {
+        mostrarMensaje('Necesitas 2 copias de "Construyendo el Comodín" para usarlo', 'info');
+        return;
+    }
+    
+    // Remover 2 copias del inventario
+    let removidas = 0;
+    for (let i = inventario.length - 1; i >= 0 && removidas < 2; i--) {
+        if (inventario[i].nombre.toLowerCase() === 'construyendo el comodín') {
+            inventario.splice(i, 1);
+            removidas++;
+        }
+    }
+    
+    // Obtener comodín aleatorio del mazo
+    if (mazos.comodines.length > 0) {
+        const indiceAleatorio = Math.floor(Math.random() * mazos.comodines.length);
+        const nuevoComodin = mazos.comodines.splice(indiceAleatorio, 1)[0];
+        
+        // Agregar al inventario
+        inventario.push(nuevoComodin);
+        
+        mostrarMensaje(`${nombreJugador} construyó un nuevo comodín: ${simplificarNombreComodin(nuevoComodin.nombre)}! 🔨`, 'success');
+    } else {
+        mostrarMensaje('No hay más comodines en el mazo para construir', 'warning');
+    }
+    
+    // Actualizar UI y continuar
+    actualizarPanelJugadores();
+    setTimeout(() => {
+        cerrarPopupTurno();
+    }, 1500);
+}
+
+// ========== SELECTOR DE JUGADORES PARA COMODINES ==========
+
+// Función para mostrar un selector de jugadores
+function mostrarSelectorJugadores(jugadorActual, callback, mensaje = 'Selecciona un jugador:', jugadoresPermitidos = null) {
+    // Crear overlay para el selector
+    const overlay = document.createElement('div');
+    overlay.className = 'selector-jugadores-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease-out;
+    `;
+    
+    // Crear modal del selector
+    const modal = document.createElement('div');
+    modal.className = 'selector-jugadores-modal';
+    modal.style.cssText = `
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        max-width: 500px;
+        width: 90%;
+        color: white;
+        text-align: center;
+        animation: slideInUp 0.4s ease-out;
+    `;
+    
+    // Título del modal
+    const titulo = document.createElement('div');
+    titulo.style.cssText = `
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    `;
+    titulo.textContent = mensaje;
+    
+    // Contenedor de jugadores
+    const jugadoresContainer = document.createElement('div');
+    jugadoresContainer.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    `;
+    
+    // Determinar qué jugadores mostrar
+    const jugadoresAMostrar = jugadoresPermitidos || jugadores.filter(j => j !== jugadorActual);
+    
+    // Crear botón para cada jugador
+    jugadoresAMostrar.forEach(nombreJugador => {
+        const botonJugador = document.createElement('button');
+        botonJugador.style.cssText = `
+            padding: 1rem 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        `;
+        
+        botonJugador.innerHTML = `
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">👤</div>
+            <div style="font-size: 0.9rem;">${nombreJugador}</div>
+            <div style="font-size: 0.7rem; opacity: 0.8;">💎 ${puntuaciones[nombreJugador] || 0} pts</div>
+        `;
+        
+        // Efectos hover
+        botonJugador.onmouseover = () => {
+            botonJugador.style.transform = 'translateY(-5px) scale(1.05)';
+            botonJugador.style.borderColor = 'rgba(255, 255, 255, 0.8)';
+            botonJugador.style.background = 'rgba(255, 255, 255, 0.3)';
+        };
+        
+        botonJugador.onmouseout = () => {
+            botonJugador.style.transform = 'translateY(0) scale(1)';
+            botonJugador.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            botonJugador.style.background = 'rgba(255, 255, 255, 0.2)';
+        };
+        
+        // Evento click
+        botonJugador.onclick = () => {
+            // Animación de selección
+            botonJugador.style.animation = 'comodinSelect 0.3s ease';
+            
+            setTimeout(() => {
+                // Cerrar modal
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(overlay);
+                }, 300);
+                
+                // Ejecutar callback
+                callback(nombreJugador);
+            }, 300);
+        };
+        
+        jugadoresContainer.appendChild(botonJugador);
+    });
+    
+    // Botón cancelar
+    const botonCancelar = document.createElement('button');
+    botonCancelar.style.cssText = `
+        padding: 0.75rem 1.5rem;
+        background: rgba(255, 71, 87, 0.8);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    `;
+    botonCancelar.textContent = '✖️ Cancelar';
+    
+    botonCancelar.onmouseover = () => {
+        botonCancelar.style.background = 'rgba(255, 71, 87, 1)';
+        botonCancelar.style.transform = 'translateY(-2px)';
+    };
+    
+    botonCancelar.onmouseout = () => {
+        botonCancelar.style.background = 'rgba(255, 71, 87, 0.8)';
+        botonCancelar.style.transform = 'translateY(0)';
+    };
+    
+    botonCancelar.onclick = () => {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            document.body.removeChild(overlay);
+        }, 300);
+    };
+    
+    // Ensamblar modal
+    modal.appendChild(titulo);
+    modal.appendChild(jugadoresContainer);
+    modal.appendChild(botonCancelar);
+    overlay.appendChild(modal);
+    
+    // Agregar animaciones CSS si no existen
+    if (!document.querySelector('#selectorAnimations')) {
+        const style = document.createElement('style');
+        style.id = 'selectorAnimations';
+        style.textContent = `
+            @keyframes slideInUp {
+                0% { transform: translateY(50px); opacity: 0; }
+                100% { transform: translateY(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Agregar al DOM
+    document.body.appendChild(overlay);
+}
+
+// ========== FUNCIÓN PARA AGREGAR COMODINES AL INVENTARIO ==========
+
+// Función para agregar un comodín al inventario de un jugador
+function agregarComodinAlInventario(nombreJugador, comodin) {
+    if (!inventariosComodines[nombreJugador]) {
+        inventariosComodines[nombreJugador] = [];
+    }
+    
+    inventariosComodines[nombreJugador].push(comodin);
+    
+    // Mostrar notificación
+    mostrarMensaje(`${nombreJugador} obtuvo un comodín: ${simplificarNombreComodin(comodin.nombre)}! 🃏`, 'success');
+    
+    // Actualizar UI
+    actualizarPanelJugadores();
+}
+
+// Función para mostrar temporalmente un comodín obtenido
+function mostrarCartaComodinTemporal(carta, nombreJugador) {
+    // Variable de control para evitar doble llamado a siguienteTurno
+    let turnoYaCambiado = false;
+    
+    // Función auxiliar para cambiar turno solo una vez
+    const cambiarTurnoSiNoSeHizo = () => {
+        if (!turnoYaCambiado) {
+            turnoYaCambiado = true;
+            siguienteTurno();
+        }
+    };
+    
+    // Crear overlay temporal para mostrar el comodín obtenido
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease-out;
+    `;
+    
+    // Crear modal del comodín
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        width: 90%;
+        color: white;
+        text-align: center;
+        animation: slideInUp 0.4s ease-out;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    `;
+    
+    // Contenido del modal
+    modal.innerHTML = `
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🎁</div>
+        <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">
+            ¡Comodín Obtenido!
+        </div>
+        <div style="font-size: 1.2rem; margin-bottom: 1rem; color: rgba(255, 255, 255, 0.9);">
+            ${nombreJugador}
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem; backdrop-filter: blur(10px);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">
+                ${obtenerIconoComodin(carta.nombre.toLowerCase())}
+            </div>
+            <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem;">
+                ${simplificarNombreComodin(carta.nombre)}
+            </div>
+            <div style="font-size: 0.9rem; opacity: 0.9; line-height: 1.4;">
+                ${carta.texto}
+            </div>
+        </div>
+        <div style="font-size: 0.9rem; opacity: 0.8; font-style: italic;">
+            Este comodín se agregó a tu inventario. ¡Úsalo sabiamente!
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Crear efectos de partículas de celebración
+    crearEfectosComodinObtenido(modal);
+    
+    // Auto-cerrar después de 8 segundos y pasar al siguiente turno
+    setTimeout(() => {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+            // Pasar al siguiente turno después de obtener el comodín (solo una vez)
+            cambiarTurnoSiNoSeHizo();
+        }, 300);
+    }, 8000);
+    
+    // También permitir cerrar con clic y pasar al siguiente turno
+    overlay.onclick = (e) => {
+        if (e.target === overlay) {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                if (document.body.contains(overlay)) {
+                    document.body.removeChild(overlay);
+                }
+                // Pasar al siguiente turno al cerrar manualmente (solo una vez)
+                cambiarTurnoSiNoSeHizo();
+            }, 300);
+        }
+    };
+}
+
+// Función para crear efectos visuales cuando se obtiene un comodín
+function crearEfectosComodinObtenido(elemento) {
+    // Crear múltiples efectos de brillo
+    for (let i = 0; i < 12; i++) {
+        const efecto = document.createElement('div');
+        efecto.style.cssText = `
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, #ffd700 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: efectoComodin 2s ease-out infinite;
+            animation-delay: ${Math.random() * 2}s;
+        `;
+        
+        // Posición aleatoria alrededor del elemento
+        const angle = (i / 12) * 2 * Math.PI;
+        const radius = 50 + Math.random() * 30;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        
+        efecto.style.left = `calc(50% + ${x}px)`;
+        efecto.style.top = `calc(50% + ${y}px)`;
+        
+        elemento.appendChild(efecto);
+        
+        // Remover después de la animación
+        setTimeout(() => {
+            if (elemento.contains(efecto)) {
+                elemento.removeChild(efecto);
+            }
+        }, 4000);
+    }
+    
+    // Agregar animación CSS si no existe
+    if (!document.querySelector('#efectoComodinStyles')) {
+        const style = document.createElement('style');
+        style.id = 'efectoComodinStyles';
+        style.textContent = `
+            @keyframes efectoComodin {
+                0% { 
+                    transform: scale(0) rotate(0deg); 
+                    opacity: 1; 
+                }
+                50% { 
+                    transform: scale(1.5) rotate(180deg); 
+                    opacity: 0.8; 
+                }
+                100% { 
+                    transform: scale(0) rotate(360deg); 
+                    opacity: 0; 
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// Función para mostrar temporalmente un comodín que se aplicó inmediatamente
+function mostrarCartaComodinInstantaneo(carta, nombreJugador, mensaje) {
+    // Variable de control para evitar doble llamado a siguienteTurno
+    let turnoYaCambiado = false;
+    
+    // Función auxiliar para cambiar turno solo una vez
+    const cambiarTurnoSiNoSeHizo = () => {
+        if (!turnoYaCambiado) {
+            turnoYaCambiado = true;
+            siguienteTurno();
+        }
+    };
+    
+    // Crear overlay temporal para mostrar el comodín aplicado
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease-out;
+    `;
+    
+    // Crear modal del comodín
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        width: 90%;
+        color: white;
+        text-align: center;
+        animation: slideInUp 0.4s ease-out;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    `;
+    
+    // Contenido del modal
+    modal.innerHTML = `
+        <div style="font-size: 3rem; margin-bottom: 1rem;">⚡</div>
+        <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">
+            ¡Efecto Instantáneo!
+        </div>
+        <div style="font-size: 1.2rem; margin-bottom: 1rem; color: rgba(255, 255, 255, 0.9);">
+            ${nombreJugador}
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem; backdrop-filter: blur(10px);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">
+                ${obtenerIconoComodin(carta.nombre.toLowerCase())}
+            </div>
+            <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem;">
+                ${simplificarNombreComodin(carta.nombre)}
+            </div>
+            <div style="font-size: 0.9rem; opacity: 0.9; line-height: 1.4; margin-bottom: 0.5rem;">
+                ${carta.texto}
+            </div>
+            <div style="font-size: 1rem; font-weight: bold; color: #ffd700; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">
+                ${mensaje}
+            </div>
+        </div>
+        <div style="font-size: 0.9rem; opacity: 0.8; font-style: italic;">
+            El efecto se aplicó automáticamente. Pasando al siguiente turno...
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Crear efectos de partículas especiales para comodín instantáneo
+    crearEfectosComodinInstantaneo(modal);
+    
+    // Auto-cerrar después de 3 segundos y pasar al siguiente turno
+    setTimeout(() => {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+            // Pasar al siguiente turno después del efecto instantáneo (solo una vez)
+            cambiarTurnoSiNoSeHizo();
+        }, 300);
+    }, 3000);
+    
+    // También permitir cerrar con clic y pasar al siguiente turno
+    overlay.onclick = (e) => {
+        if (e.target === overlay) {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                if (document.body.contains(overlay)) {
+                    document.body.removeChild(overlay);
+                }
+                // Pasar al siguiente turno al cerrar manualmente (solo una vez)
+                cambiarTurnoSiNoSeHizo();
+            }, 300);
+        }
+    };
+}
+
+// Función para crear efectos visuales para comodines instantáneos
+function crearEfectosComodinInstantaneo(elemento) {
+    // Crear múltiples efectos de brillo dorado
+    for (let i = 0; i < 15; i++) {
+        const efecto = document.createElement('div');
+        efecto.style.cssText = `
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle, #ffd700 0%, #ffed4e 50%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: efectoComodinInstantaneo 1.5s ease-out infinite;
+            animation-delay: ${Math.random() * 1.5}s;
+        `;
+        
+        // Posición aleatoria alrededor del elemento
+        const angle = (i / 15) * 2 * Math.PI;
+        const radius = 60 + Math.random() * 40;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        
+        efecto.style.left = `calc(50% + ${x}px)`;
+        efecto.style.top = `calc(50% + ${y}px)`;
+        
+        elemento.appendChild(efecto);
+        
+        // Remover después de la animación
+        setTimeout(() => {
+            if (elemento.contains(efecto)) {
+                elemento.removeChild(efecto);
+            }
+        }, 3000);
+    }
+    
+    // Agregar animación CSS si no existe
+    if (!document.querySelector('#efectoComodinInstantaneoStyles')) {
+        const style = document.createElement('style');
+        style.id = 'efectoComodinInstantaneoStyles';
+        style.textContent = `
+            @keyframes efectoComodinInstantaneo {
+                0% { 
+                    transform: scale(0) rotate(0deg); 
+                    opacity: 1; 
+                }
+                30% { 
+                    transform: scale(1.8) rotate(120deg); 
+                    opacity: 1; 
+                }
+                100% { 
+                    transform: scale(0) rotate(360deg); 
+                    opacity: 0; 
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// Función para mostrar un comodín solo para visualización (sin opción de uso)
+function mostrarComodinVisualizacion(nombreJugador, tipoComodin) {
+    const inventario = inventariosComodines[nombreJugador] || [];
+    
+    // Buscar un comodín de este tipo en el inventario
+    const comodin = inventario.find(c => c.nombre.toLowerCase() === tipoComodin);
+    
+    if (!comodin) {
+        mostrarMensaje('Comodín no encontrado en el inventario', 'error');
+        return;
+    }
+    
+    // Contar cuántos comodines de este tipo tiene
+    const cantidad = inventario.filter(c => c.nombre.toLowerCase() === tipoComodin).length;
+    
+    // Crear overlay para el modal
+    const overlay = document.createElement('div');
+    overlay.className = 'comodin-visualizacion-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease-out;
+    `;
+    
+    // Crear modal del comodín
+    const modal = document.createElement('div');
+    modal.className = 'comodin-visualizacion-modal';
+    modal.style.cssText = `
+        background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        max-width: 450px;
+        width: 90%;
+        color: white;
+        text-align: center;
+        animation: slideInUp 0.4s ease-out;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        position: relative;
+    `;
+    
+    // Contenido del modal
+    modal.innerHTML = `
+        <div style="position: absolute; top: 15px; right: 15px;">
+            <button onclick="cerrarComodinVisualizacion()" style="
+                width: 30px; 
+                height: 30px; 
+                border-radius: 50%; 
+                background: rgba(255, 255, 255, 0.2); 
+                border: none; 
+                color: white; 
+                font-size: 18px; 
+                font-weight: bold; 
+                cursor: pointer; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center;
+                transition: all 0.2s ease;
+            " onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">×</button>
+        </div>
+        
+        <div style="font-size: 2.5rem; margin-bottom: 1rem;">${obtenerIconoComodin(tipoComodin)}</div>
+        
+        <div style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 8px 16px; margin-bottom: 1rem; display: inline-block;">
+            <span style="font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;">👁️ Solo Visualización</span>
+        </div>
+        
+        <div style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">
+            ${simplificarNombreComodin(comodin.nombre)}
+        </div>
+        
+        <div style="font-size: 1rem; margin-bottom: 1.5rem; color: rgba(255, 255, 255, 0.9);">
+            Propietario: <strong>${nombreJugador}</strong>
+            ${cantidad > 1 ? `<br><span style="font-size: 0.9rem; opacity: 0.8;">Tienes ${cantidad} de estos comodines</span>` : ''}
+        </div>
+        
+        <div style="background: rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem; backdrop-filter: blur(10px);">
+            <div style="font-size: 1rem; font-weight: bold; margin-bottom: 0.8rem; color: #ffd700;">
+                📜 Descripción del Efecto:
+            </div>
+            <div style="font-size: 0.95rem; opacity: 0.95; line-height: 1.5; text-align: left;">
+                ${comodin.texto || comodin.descripcion || 'Sin descripción disponible'}
+            </div>
+        </div>
+        
+        <div style="font-size: 0.85rem; opacity: 0.7; font-style: italic; margin-bottom: 1rem;">
+            💡 Para usar este comodín, debes estar en tu turno y seleccionarlo en el inicio del turno
+        </div>
+        
+        <button onclick="cerrarComodinVisualizacion()" style="
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        " onmouseover="
+            this.style.background='rgba(255, 255, 255, 0.3)';
+            this.style.borderColor='rgba(255, 255, 255, 0.5)';
+            this.style.transform='translateY(-2px)';
+        " onmouseout="
+            this.style.background='rgba(255, 255, 255, 0.2)';
+            this.style.borderColor='rgba(255, 255, 255, 0.3)';
+            this.style.transform='translateY(0)';
+        ">
+            👁️ Entendido
+        </button>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Evento para cerrar al hacer clic en el overlay
+    overlay.onclick = (e) => {
+        if (e.target === overlay) {
+            cerrarComodinVisualizacion();
+        }
+    };
+    
+    // Crear efectos visuales suaves
+    crearEfectosVisualizacionComodin(modal);
+}
+
+// Función para cerrar el modal de visualización de comodín
+function cerrarComodinVisualizacion() {
+    const overlay = document.querySelector('.comodin-visualizacion-overlay');
+    if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+        }, 300);
+    }
+}
+
+// Función para crear efectos visuales suaves en el modal de visualización
+function crearEfectosVisualizacionComodin(elemento) {
+    // Crear efectos de brillo suaves
+    for (let i = 0; i < 6; i++) {
+        const efecto = document.createElement('div');
+        efecto.style.cssText = `
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: efectoVisualizacionSuave 3s ease-in-out infinite;
+            animation-delay: ${Math.random() * 3}s;
+        `;
+        
+        // Posición aleatoria alrededor del elemento
+        const angle = (i / 6) * 2 * Math.PI;
+        const radius = 40 + Math.random() * 20;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        
+        efecto.style.left = `calc(50% + ${x}px)`;
+        efecto.style.top = `calc(50% + ${y}px)`;
+        
+        elemento.appendChild(efecto);
+        
+        // Remover después de 5 segundos
+        setTimeout(() => {
+            if (elemento.contains(efecto)) {
+                elemento.removeChild(efecto);
+            }
+        }, 5000);
+    }
+    
+    // Agregar animación CSS si no existe
+    if (!document.querySelector('#efectoVisualizacionSuaveStyles')) {
+        const style = document.createElement('style');
+        style.id = 'efectoVisualizacionSuaveStyles';
+        style.textContent = `
+            @keyframes efectoVisualizacionSuave {
+                0%, 100% { 
+                    transform: scale(0.5); 
+                    opacity: 0.3; 
+                }
+                50% { 
+                    transform: scale(1.2); 
+                    opacity: 0.8; 
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// Función para obtener el ícono según el tipo de comodín
+
+// Funciones para controlar el acceso a los mazos (una carta por turno)
+function deshabilitarMazos() {
+    const mazos = document.querySelectorAll('.mazo');
+    mazos.forEach(mazo => {
+        mazo.style.pointerEvents = 'none';
+        mazo.style.opacity = '0.5';
+        mazo.style.cursor = 'not-allowed';
+        mazo.classList.add('mazo-deshabilitado');
+    });
+}
+
+function habilitarMazos() {
+    const mazos = document.querySelectorAll('.mazo');
+    mazos.forEach(mazo => {
+        mazo.style.pointerEvents = 'auto';
+        mazo.style.opacity = '1';
+        mazo.style.cursor = 'pointer';
+        mazo.classList.remove('mazo-deshabilitado');
+    });
+}
+
+function reanudarTurno() {
+    cartaSacadaEnTurno = false;
+    habilitarMazos();
+    console.log('🎯 DEBUG: Turno reanudado - se puede sacar una nueva carta');
+}
+
+// ========== SISTEMA DE PROHIBICIÓN DE COMODINES ==========
+
+// Función para verificar si hay jugadores con comodín de prohibición
+function hayJugadoresConProhibicion(jugadorExcluido) {
+    return jugadores.filter(jugador => 
+        jugador !== jugadorExcluido && 
+        tieneComodinProhibicion(jugador)
+    );
+}
+
+// Función para verificar si un jugador tiene el comodín de prohibición
+function tieneComodinProhibicion(nombreJugador) {
+    const inventario = inventariosComodines[nombreJugador] || [];
+    return inventario.some(comodin => 
+        comodin.nombre.toLowerCase() === '¡no!,¡te lo prohíbo!'
+    );
+}
+
+// Función para mostrar popup de intercepción a jugadores con prohibición
+function mostrarPopupProhibicion(jugadoresConProhibicion, comodin, jugadorUsando) {
+    esperandoProhibicion = true;
+    
+    // Crear overlay para intercepción
+    const overlay = document.createElement('div');
+    overlay.id = 'prohibicionOverlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(255, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 10002;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease-out;
+    `;
+    
+    // Crear modal de intercepción
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        max-width: 500px;
+        width: 90%;
+        color: white;
+        text-align: center;
+        animation: slideInUp 0.4s ease-out;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    `;
+    
+    // Lista de jugadores que pueden interceptar
+    const listaJugadores = jugadoresConProhibicion.map(jugador => 
+        `<span style="color: #ffd700; font-weight: bold;">${jugador}</span>`
+    ).join(', ');
+    
+    modal.innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 1rem; animation: pulse 1s infinite;">🚫</div>
+        <div style="font-size: 1.8rem; font-weight: bold; margin-bottom: 1rem; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">
+            ¡INTERCEPCIÓN DISPONIBLE!
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem; backdrop-filter: blur(10px);">
+            <div style="font-size: 1.2rem; margin-bottom: 0.8rem;">
+                <strong>${jugadorUsando}</strong> está usando:
+            </div>
+            <div style="font-size: 1.1rem; font-weight: bold; color: #ffd700; margin-bottom: 0.8rem;">
+                ${simplificarNombreComodin(comodin.nombre)}
+            </div>
+            <div style="font-size: 0.95rem; opacity: 0.9; line-height: 1.4;">
+                ${comodin.texto || comodin.descripcion || ''}
+            </div>
+        </div>
+        <div style="font-size: 1.1rem; margin-bottom: 1.5rem;">
+            Jugadores que pueden interceptar:<br>
+            ${listaJugadores}
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: center; align-items: center;">
+            <button id="btnUsar Prohibicion" style="
+                padding: 1rem 2rem;
+                background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                border-radius: 10px;
+                color: white;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 1.1rem;
+                backdrop-filter: blur(10px);
+            ">
+                🚫 ¡USAR PROHIBICIÓN!
+            </button>
+            <button id="btnPermitir" style="
+                padding: 1rem 2rem;
+                background: rgba(255, 255, 255, 0.2);
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                border-radius: 10px;
+                color: white;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 1.1rem;
+                backdrop-filter: blur(10px);
+            ">
+                ✅ Permitir
+            </button>
+        </div>
+        <div id="contadorProhibicion" style="
+            font-size: 1rem; 
+            opacity: 0.8; 
+            margin-top: 1rem;
+            animation: pulse 1s infinite;
+        ">
+            Tiempo restante: <span id="tiempoRestanteProhibicion">5</span> segundos
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Configurar botones
+    const btnProhibir = document.getElementById('btnUsar Prohibicion');
+    const btnPermitir = document.getElementById('btnPermitir');
+    
+    btnProhibir.onclick = () => usarProhibicion(jugadoresConProhibicion);
+    btnPermitir.onclick = () => permitirComodin();
+    
+    // Hover effects
+    [btnProhibir, btnPermitir].forEach(btn => {
+        btn.onmouseover = () => {
+            btn.style.transform = 'translateY(-2px)';
+            btn.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.3)';
+        };
+        btn.onmouseout = () => {
+            btn.style.transform = 'translateY(0)';
+            btn.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
+        };
+    });
+    
+    // Contador de tiempo (5 segundos para decidir)
+    let tiempoRestante = 5;
+    const spanTiempo = document.getElementById('tiempoRestanteProhibicion');
+    
+    tiempoLimiteProhibicion = setInterval(() => {
+        tiempoRestante--;
+        if (spanTiempo) {
+            spanTiempo.textContent = tiempoRestante;
+        }
+        
+        if (tiempoRestante <= 0) {
+            // Tiempo agotado, permitir automáticamente
+            permitirComodin();
+        }
+    }, 1000);
+}
+
+// Función para usar el comodín de prohibición
+function usarProhibicion(jugadoresConProhibicion) {
+    // Limpiar timeout
+    if (tiempoLimiteProhibicion) {
+        clearInterval(tiempoLimiteProhibicion);
+        tiempoLimiteProhibicion = null;
+    }
+    
+    // Si hay varios jugadores con prohibición, mostrar selector
+    if (jugadoresConProhibicion.length > 1) {
+        cerrarPopupProhibicion();
+        mostrarSelectorJugadores(null, (jugadorProhibidor) => {
+            ejecutarProhibicion(jugadorProhibidor);
+        }, 'Selecciona quién usa la prohibición:', jugadoresConProhibicion);
+    } else {
+        ejecutarProhibicion(jugadoresConProhibicion[0]);
+    }
+}
+
+// Función para ejecutar la prohibición
+function ejecutarProhibicion(jugadorProhibidor) {
+    // Encontrar y remover el comodín de prohibición del inventario
+    const inventario = inventariosComodines[jugadorProhibidor] || [];
+    const indiceProhibicion = inventario.findIndex(comodin => 
+        comodin.nombre.toLowerCase() === '¡no!,¡te lo prohíbo!'
+    );
+    
+    if (indiceProhibicion !== -1) {
+        // Remover el comodín usado
+        inventario.splice(indiceProhibicion, 1);
+        
+        // Mostrar mensaje de prohibición
+        mostrarMensaje(`🚫 ${jugadorProhibidor} prohibió el comodín de ${jugadorUsandoComodin}!`, 'error');
+        
+        // Devolver el comodín original al inventario del usuario
+        if (!inventariosComodines[jugadorUsandoComodin]) {
+            inventariosComodines[jugadorUsandoComodin] = [];
+        }
+        inventariosComodines[jugadorUsandoComodin].push(comodinEnProceso);
+        
+        // Actualizar panel
+        actualizarPanelJugadores();
+        
+        // Crear efectos visuales de prohibición
+        crearEfectosProhibicion();
+        
+        // Cerrar popup y limpiar estado
+        cerrarPopupProhibicion();
+        limpiarEstadoProhibicion();
+        
+        // Mostrar mensaje final
+        setTimeout(() => {
+            mostrarMensaje(`El comodín fue bloqueado y devuelto a ${jugadorUsandoComodin}`, 'info');
+        }, 1500);
+    }
+}
+
+// Función para permitir el comodín (continuar normalmente)
+function permitirComodin() {
+    // Limpiar timeout
+    if (tiempoLimiteProhibicion) {
+        clearInterval(tiempoLimiteProhibicion);
+        tiempoLimiteProhibicion = null;
+    }
+    
+    cerrarPopupProhibicion();
+    
+    // Continuar con el efecto original del comodín
+    ejecutarEfectoComodin(comodinEnProceso, jugadorUsandoComodin);
+    
+    limpiarEstadoProhibicion();
+}
+
+// Función para cerrar popup de prohibición
+function cerrarPopupProhibicion() {
+    const overlay = document.getElementById('prohibicionOverlay');
+    if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+        }, 300);
+    }
+}
+
+// Función para limpiar estado de prohibición
+function limpiarEstadoProhibicion() {
+    comodinEnProceso = null;
+    jugadorUsandoComodin = null;
+    esperandoProhibicion = false;
+    if (tiempoLimiteProhibicion) {
+        clearInterval(tiempoLimiteProhibicion);
+        tiempoLimiteProhibicion = null;
+    }
+}
+
+// Función para crear efectos visuales de prohibición
+function crearEfectosProhibicion() {
+    // Crear múltiples elementos de prohibición
+    for (let i = 0; i < 8; i++) {
+        const efecto = document.createElement('div');
+        efecto.style.cssText = `
+            position: fixed;
+            font-size: 3rem;
+            color: #e74c3c;
+            pointer-events: none;
+            z-index: 10003;
+            animation: efectoProhibicion 2s ease-out forwards;
+            animation-delay: ${i * 0.1}s;
+        `;
+        efecto.textContent = '🚫';
+        
+        // Posición aleatoria en la pantalla
+        efecto.style.left = Math.random() * window.innerWidth + 'px';
+        efecto.style.top = Math.random() * window.innerHeight + 'px';
+        
+        document.body.appendChild(efecto);
+        
+        // Remover después de la animación
+        setTimeout(() => {
+            if (document.body.contains(efecto)) {
+                document.body.removeChild(efecto);
+            }
+        }, 2500);
+    }
+    
+    // Agregar animación CSS si no existe
+    if (!document.querySelector('#efectoProhibicionStyles')) {
+        const style = document.createElement('style');
+        style.id = 'efectoProhibicionStyles';
+        style.textContent = `
+            @keyframes efectoProhibicion {
+                0% { 
+                    transform: scale(0) rotate(0deg); 
+                    opacity: 1; 
+                }
+                50% { 
+                    transform: scale(1.5) rotate(180deg); 
+                    opacity: 0.8; 
+                }
+                100% { 
+                    transform: scale(0) rotate(360deg); 
+                    opacity: 0; 
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// Función principal para ejecutar efectos de comodines (separada para el sistema de prohibición)
+function ejecutarEfectoComodin(carta, nombreJugador) {
+    const nombreComodin = carta.nombre.toLowerCase();
+    
+    switch (nombreComodin) {
+        case '¡ganas un punto gratis!':
+            aplicarPuntoGratis(nombreJugador, carta);
+            break;
+            
+        case '¡resta un punto a un contrincante!':
+            aplicarRestarPunto(nombreJugador, carta);
+            break;
+            
+        case '¡reversa!':
+            aplicarReversa(nombreJugador, carta);
+            break;
+            
+        case '¡eres un ladrón de comodines!':
+            aplicarLadronComodines(nombreJugador, carta);
+            break;
+            
+        case 'escapa de la cárcel':
+            aplicarEscapeCarcel(nombreJugador, carta);
+            break;
+            
+        case 'construyendo el comodín':
+            aplicarConstruirComodin(nombreJugador, carta);
+            break;
+            
+        default:
+            mostrarMensaje('Tipo de comodín no reconocido', 'error');
+            return;
+    }
+}
 

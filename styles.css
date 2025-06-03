@@ -3889,3 +3889,264 @@
         filter: hue-rotate(60deg);
     }
 }
+
+/* ========== ESTILOS PARA SISTEMA DE COMODINES ========== */
+
+/* Contenedor del inventario de comodines */
+.comodines-inventario {
+    margin-top: 0.5rem;
+    padding: 0.25rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+}
+
+/* Sin comodines */
+.sin-comodines {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    font-style: italic;
+}
+
+/* Lista de comodines */
+.comodines-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    justify-content: center;
+}
+
+/* Comodín individual en miniatura */
+.comodin-miniatura {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.comodin-miniatura::before {
+    content: '👁️';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 0.7rem;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s ease;
+    pointer-events: none;
+}
+
+.comodin-miniatura:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.comodin-miniatura:hover::before {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Icono del comodín */
+.comodin-icono {
+    font-size: 1.2rem;
+    display: block;
+}
+
+/* Cantidad de comodines del mismo tipo */
+.comodin-cantidad {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #ff4757;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    animation: pulseCount 2s infinite;
+}
+
+@keyframes pulseCount {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Responsividad para comodines */
+@media (max-width: 768px) {
+    .comodin-miniatura {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .comodin-icono {
+        font-size: 1rem;
+    }
+    
+    .comodin-cantidad {
+        width: 16px;
+        height: 16px;
+        font-size: 0.6rem;
+        top: -4px;
+        right: -4px;
+    }
+}
+
+/* ========== POPUP DE INICIO DE TURNO CON COMODINES ========== */
+
+/* Contenedor de comodines en popup de turno */
+.popup-comodines-container {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.popup-comodines-titulo {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.popup-comodines-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Comodín clickeable en popup */
+.popup-comodin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 80px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.popup-comodin:hover {
+    transform: translateY(-4px) scale(1.05);
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.popup-comodin-icono {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.popup-comodin-nombre {
+    font-size: 0.7rem;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    line-height: 1.2;
+}
+
+.popup-sin-comodines {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    font-size: 1rem;
+    padding: 1rem;
+}
+
+/* Animaciones para comodines */
+@keyframes comodinSelect {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.popup-comodin.seleccionado {
+    animation: comodinSelect 0.3s ease;
+    border-color: #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+/* Responsividad para popup de comodines */
+@media (max-width: 768px) {
+    .popup-comodines-container {
+        margin-top: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .popup-comodin {
+        min-width: 60px;
+        padding: 0.5rem;
+    }
+    
+    .popup-comodin-icono {
+        font-size: 1.5rem;
+    }
+    
+    .popup-comodin-nombre {
+        font-size: 0.6rem;
+    }
+}
+
+/* Estilos para mazos deshabilitados (una carta por turno) */
+.mazo.mazo-deshabilitado {
+    position: relative;
+    filter: grayscale(50%);
+    transform: scale(0.95);
+    transition: all 0.3s ease;
+}
+
+.mazo.mazo-deshabilitado::before {
+    content: '🚫';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    z-index: 10;
+    opacity: 0.8;
+    animation: pulse 2s infinite;
+}
+
+.mazo.mazo-deshabilitado:hover {
+    transform: scale(0.95) !important;
+    box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3) !important;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+    50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+}

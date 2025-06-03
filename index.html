@@ -124,8 +124,17 @@
             <div class="turno-popup-numero" id="turnoPopupNumero">1</div>
             <div class="turno-popup-jugador" id="turnoPopupJugador">Jugador 1</div>
             <div class="turno-popup-mensaje" id="turnoPopupMensaje">¡Es tu momento de brillar!</div>
+            
+            <!-- Sección de comodines disponibles -->
+            <div class="popup-comodines-container" id="popupComodinesContainer">
+                <div class="popup-comodines-titulo">🃏 Tus Comodines Disponibles</div>
+                <div class="popup-comodines-lista" id="popupComodinesLista">
+                    <!-- Se llenará dinámicamente con los comodines del jugador -->
+                </div>
+            </div>
+            
             <div>
-                <button type="button" class="btn-continuar-turno primary" onclick="cerrarPopupTurno()">
+                <button type="button" class="btn-continuar-turno primary" onclick="continuarSinComodin()">
                     🎮 ¡Vamos a jugar!
                 </button>
                 <button type="button" class="btn-continuar-turno" onclick="saltarTurno()">
@@ -328,7 +337,7 @@
     </div>
 
     <div class="container mx-auto px-4 py-8">
-        <h1 class="text-5xl font-black text-center text-gray-800 mb-12">Mazos de Cartas</h1>
+        <h1 class="text-5xl font-black text-center text-gray-800 mb-12">GrafiCando</h1>
         
         <div class="flex justify-center gap-8 mb-12">
             <div class="text-center">

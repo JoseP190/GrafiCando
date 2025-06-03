@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mazos de Cartas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-purple-100 min-h-screen">
+    <!-- Popup de configuración inicial -->
+    <div class="config-overlay" id="configOverlay">
+        <div class="config-popup">
+            <h1 class="config-titulo">🎮 Configurar Jugadores</h1>
+            <p class="config-subtitulo">Ingresa los nombres de los jugadores (mínimo 2)</p>
+            
+            <div id="jugadoresContainer">
+                <div class="jugador-input-container">
+                    <input type="text" class="jugador-input" placeholder="Nombre del Jugador 1" maxlength="20">
+                    <button type="button" class="btn-remove-jugador" onclick="removerJugador(this)" style="display: none;">×</button>
+                </div>
+                <div class="jugador-input-container">
+                    <input type="text" class="jugador-input" placeholder="Nombre del Jugador 2" maxlength="20">
+                    <button type="button" class="btn-remove-jugador" onclick="removerJugador(this)" style="display: none;">×</button>
+                </div>
+            </div>
+            
+            <button type="button" class="btn-add-jugador" onclick="agregarJugador()">
+                ➕ Agregar Jugador
+            </button>
+            
+            <div class="jugadores-count" id="jugadoresCount">2 jugadores</div>
+            
+            <button type="button" class="btn-iniciar-juego" id="btnIniciarJuego" onclick="iniciarJuego()" disabled>
+                🚀 Iniciar Juego
+            </button>
+        </div>
+    </div>
+
+    <!-- Pantalla de orden aleatorio -->
+    <div class="orden-overlay" id="ordenOverlay">
+        <div class="orden-popup">
+            <h1 class="orden-titulo">🎲 Orden de Turnos</h1>
+            <p class="orden-subtitulo">¡El orden ha sido mezclado aleatoriamente!</p>
+            
+            <div class="lista-orden" id="listaOrden">
+                <!-- Se llenará dinámicamente -->
+            </div>
+            
+            <div>
+                <button type="button" class="btn-reordenar" onclick="reordenarJugadores()">
+                    🔄 Mezclar de Nuevo
+                </button>
+                <button type="button" class="btn-confirmar-orden" onclick="confirmarOrden()">
+                    ✅ Confirmar Orden
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón toggle para panel en móviles -->
+    <button class="btn-toggle-panel" id="btnTogglePanel" onclick="togglePanel()">
+        👥
+    </button>
+
+    <!-- Overlay para cerrar panel en móviles -->
+    <div class="panel-overlay" id="panelOverlay" onclick="cerrarPanel()"></div>
+
+    <!-- Panel de jugadores y turnos -->
+    <div class="panel-jugadores" id="panelJugadores" style="display: none;">
+        <div class="panel-titulo">👥 Jugadores</div>
+        <div class="turno-actual" id="turnoActual">
+            🎯 Turno #1: <span id="jugadorActual">Jugador 1</span>
+        </div>
+        <div class="lista-jugadores" id="listaJugadores">
+            <!-- Se llenará dinámicamente -->
+        </div>
+        <button type="button" class="btn-siguiente-turno" onclick="siguienteTurno()">
+            ⏭️ Siguiente Turno
+        </button>
+        
+        <!-- Panel de gestión de jugadores -->
+        <div class="panel-gestion">
+            <div class="gestion-titulo">Gestionar Jugadores:</div>
+            
+            <!-- Input simplificado para nuevo jugador -->
+            <div class="input-nuevo-jugador-container" id="inputContainer">
+                <input type="text" class="input-nuevo-jugador" placeholder="Nombre del nuevo jugador" maxlength="20" id="nombreNuevoJugador">
+                <button type="button" class="btn-agregar-jugador" id="btnAgregarJugador" onclick="agregarNuevoJugador()">
+                    <span class="icono">+</span>
+                </button>
+            </div>
+            <div class="mensaje-validacion" id="mensajeValidacion"></div>
+            
+            <button type="button" class="btn-gestion reordenar" onclick="reordenarEnPartida()">
+                <span class="icono-reordenar">🔀</span>
+                <span class="texto-reordenar">Reordenar</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Botón trigger para abrir el popup del dado -->
+    <button class="dado-trigger" onclick="abrirPopupDado()">
+        🎲
+    </button>
+
+    <!-- Popup del dado -->
+    <div class="dado-popup-overlay" id="dadoPopupOverlay">
+        <div class="dado-popup">
+            <button class="close-popup" onclick="cerrarPopupDado()">×</button>
+            <div class="dado-container-popup">
+                <h2 class="popup-titulo">🎲 Dado Mágico 🎲</h2>
+                <div class="dado-cube" id="dadoCube">
+                    <span id="numeroDadoPopup">🎲</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup de anuncio de turno -->
+    <div class="turno-popup-overlay" id="turnoPopupOverlay">
+        <div class="turno-popup">
+            <div class="turno-popup-titulo">Es el turno de:</div>
+            <div class="turno-popup-numero" id="turnoPopupNumero">1</div>
+            <div class="turno-popup-jugador" id="turnoPopupJugador">Jugador 1</div>
+            <div class="turno-popup-mensaje" id="turnoPopupMensaje">¡Es tu momento de brillar!</div>
+            <div>
+                <button type="button" class="btn-continuar-turno primary" onclick="cerrarPopupTurno()">
+                    🎮 ¡Vamos a jugar!
+                </button>
+                <button type="button" class="btn-continuar-turno" onclick="saltarTurno()">
+                    ⏭️ Saltar turno
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contador de tiempo -->
+    <div class="contador-tiempo" id="contadorTiempo">
+        <div class="contador-circulo normal" id="contadorCirculo">
+            <div class="contador-numero" id="contadorNumero">45</div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para eliminar jugador -->
+    <div class="modal-eliminar-overlay" id="modalEliminarOverlay">
+        <div class="modal-eliminar">
+            <!-- Paso 1: Confirmación inicial -->
+            <div class="modal-paso-1" id="modalPaso1">
+                <div class="modal-icono-warning">⚠️</div>
+                <div class="modal-titulo">Eliminar Jugador</div>
+                <div class="modal-mensaje">¿Seguro que deseas eliminar a este jugador?</div>
+                
+                <div class="modal-jugador-info">
+                    <div class="modal-jugador-nombre" id="modalJugadorNombre"></div>
+                </div>
+                
+                <div class="modal-botones">
+                    <button type="button" class="btn-modal btn-cancelar" onclick="cerrarModalEliminar()">
+                        ✖️ Cancelar
+                    </button>
+                    <button type="button" class="btn-modal btn-continuar" onclick="mostrarPaso2()">
+                        ➡️ Continuar
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Paso 2: Confirmación final -->
+            <div class="modal-paso-2" id="modalPaso2">
+                <div class="modal-icono-warning">🚨</div>
+                <div class="modal-titulo">¡Última Oportunidad!</div>
+                <div class="modal-mensaje">Esta acción no se puede deshacer. ¿Confirmas que quieres eliminar al jugador?</div>
+                
+                <div class="modal-jugador-info">
+                    <div class="modal-jugador-nombre" id="modalJugadorNombre2"></div>
+                </div>
+                
+                <div class="modal-botones">
+                    <button type="button" class="btn-modal btn-cancelar" onclick="cerrarModalEliminar()">
+                        ✖️ Cancelar
+                    </button>
+                    <button type="button" class="btn-modal btn-confirmar-final" onclick="confirmarEliminarJugador()">
+                        🗑️ SÍ, Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para reordenar jugadores -->
+    <div class="modal-reordenar-overlay" id="modalReordenarOverlay">
+        <div class="modal-reordenar">
+            <!-- Paso 1: Confirmación inicial con vista previa -->
+            <div class="modal-reordenar-paso-1" id="modalReordenarPaso1">
+                <div class="modal-icono-shuffle">🔀</div>
+                <div class="modal-titulo-reordenar">Reordenar Jugadores</div>
+                <div class="modal-mensaje-reordenar">¿Quieres reordenar el turno de los jugadores al azar?</div>
+                
+                <!-- Comparación del orden actual vs nuevo -->
+                <div class="comparacion-container" id="comparacionContainer">
+                    <div class="orden-actual">
+                        <h4>📋 Orden Actual</h4>
+                        <div class="orden-lista" id="ordenActualLista">
+                            <!-- Se llenará dinámicamente -->
+                        </div>
+                    </div>
+                    
+                    <div class="flecha-cambio">➡️</div>
+                    
+                    <div class="orden-nuevo">
+                        <h4>🎲 Nuevo Orden</h4>
+                        <div class="orden-lista" id="ordenNuevoLista">
+                            <!-- Se llenará dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-botones">
+                    <button type="button" class="btn-modal btn-cancelar" onclick="cerrarModalReordenar()">
+                        ✖️ Cancelar
+                    </button>
+                    <button type="button" class="btn-modal" onclick="generarNuevoOrden()">
+                        🎲 Mezclar de Nuevo
+                    </button>
+                    <button type="button" class="btn-modal btn-continuar-reordenar" onclick="mostrarPaso2Reordenar()">
+                        ➡️ Continuar
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Paso 2: Confirmación final -->
+            <div class="modal-reordenar-paso-2" id="modalReordenarPaso2">
+                <div class="modal-icono-shuffle">🎯</div>
+                <div class="modal-titulo-reordenar">¡Confirmar Cambios!</div>
+                <div class="modal-mensaje-reordenar">Este cambio afectará el orden actual. ¿Confirmas?</div>
+                
+                <!-- Vista previa detallada del nuevo orden -->
+                <div class="vista-previa-container">
+                    <div class="vista-previa-titulo">
+                        🔄 Nuevo Orden de Turnos
+                    </div>
+                    <div class="lista-orden-previa" id="listaOrdenPrevia">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+                
+                <div class="modal-botones">
+                    <button type="button" class="btn-modal btn-cancelar" onclick="cerrarModalReordenar()">
+                        ✖️ Cancelar
+                    </button>
+                    <button type="button" class="btn-modal btn-confirmar-reordenar" onclick="confirmarReordenarJugadores()">
+                        ✅ SÍ, Reordenar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Victoria -->
+    <div class="victoria-overlay" id="victoriaOverlay">
+        <div class="victoria-modal">
+            <div class="victoria-header">
+                <div class="victoria-icono">🏆</div>
+                <div class="victoria-titulo" id="victoriaTitulo">¡VICTORIA!</div>
+                <div class="victoria-ganador" id="victoriaGanador">Jugador 1</div>
+                <div class="victoria-puntuacion" id="victoriaPuntuacion">7 puntos</div>
+            </div>
+            
+            <div class="victoria-content">
+                <div class="victoria-mensaje">¡Felicitaciones por esta increíble partida!</div>
+                
+                <div class="victoria-ranking-container">
+                    <h3 class="ranking-titulo">🏅 Ranking Final</h3>
+                    <div class="victoria-ranking" id="victoriaRanking">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="victoria-footer">
+                <button class="btn-nuevo-juego" onclick="nuevoJuego()">
+                    🎮 Nuevo Juego
+                </button>
+                <button class="btn-cerrar-victoria" onclick="cerrarVictoria()">
+                    ✖️ Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup para mostrar carta -->
+    <div class="carta-popup-overlay" id="cartaPopupOverlay">
+        <div class="carta-popup" id="cartaPopup">
+            <button class="btn-cerrar-carta" onclick="cerrarPopupCarta()">×</button>
+            
+            <div class="carta-popup-header">
+                <div class="carta-tipo-badge" id="cartaTipoBadge">COMODÍN</div>
+                <div class="carta-numero" id="cartaNumero">#1</div>
+            </div>
+            
+            <div class="carta-popup-content">
+                <div class="carta-popup-titulo" id="cartaPopupTitulo">
+                    Título de la Carta
+                </div>
+                
+                <div class="carta-popup-texto" id="cartaPopupTexto">
+                    Contenido de la carta aquí...
+                </div>
+                
+                <div class="carta-popup-opciones" id="cartaPopupOpciones">
+                    <!-- Opciones de respuesta se llenarán dinámicamente -->
+                </div>
+                
+                <div class="carta-popup-respuesta hidden" id="cartaPopupRespuesta">
+                    <!-- Respuesta se mostrará aquí -->
+                </div>
+            </div>
+            
+            <div class="carta-popup-footer">
+                <button class="btn-popup-accion" id="btnMostrarRespuesta" onclick="mostrarRespuestaPopup()" style="display: none;">
+                    🔍 Ver Respuesta
+                </button>
+                <button class="btn-popup-siguiente" onclick="cerrarPopupCarta()">
+                    ✨ Continuar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-5xl font-black text-center text-gray-800 mb-12">Mazos de Cartas</h1>
+        
+        <div class="flex justify-center gap-8 mb-12">
+            <div class="text-center">
+                <div class="mazo w-[195px] h-80 cursor-pointer" onclick="sacarCarta('comodines')">
+                    <div id="comodines" class="w-full h-full rounded-xl shadow-lg bg-cover bg-center border-4 border-black"></div>
+                </div>
+                <div id="contador-comodines" class="contador-cartas">Comodines: 0</div>
+            </div>
+            <div class="text-center">
+                <div class="mazo w-[195px] h-80 cursor-pointer" onclick="sacarCarta('preguntas')">
+                    <div id="preguntas" class="w-full h-full rounded-xl shadow-lg bg-cover bg-center border-4 border-black"></div>
+                </div>
+                <div id="contador-preguntas" class="contador-cartas">Preguntas: 0</div>
+            </div>
+            <div class="text-center">
+                <div class="mazo w-[195px] h-80 cursor-pointer" onclick="sacarCarta('datos')">
+                    <div id="datos" class="w-full h-full rounded-xl shadow-lg bg-cover bg-center border-4 border-black"></div>
+                </div>
+                <div id="contador-datos" class="contador-cartas">Curiosidades: 0</div>
+            </div>
+        </div>
+
+        <div id="carta-actual" class="hidden">
+            <div class="carta-titulo"></div>
+            <div class="carta-texto"></div>
+            <div class="respuesta-input-container"></div>
+            <div class="respuesta hidden"></div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html> 

@@ -1,0 +1,16 @@
+# Dependencias principales
+tailwindcss==3.3.0  # A través de CDN, no requiere instalación local
+
+# Navegadores soportados
+# - Chrome >= 80
+# - Firefox >= 78
+# - Safari >= 14
+# - Edge >= 80
+
+# Requisitos del sistema
+# - Servidor web básico (puede ser local)
+# - JavaScript habilitado en el navegador
+# - Conexión a internet para cargar Tailwind CSS desde CDN
+
+# Nota: Este proyecto es principalmente frontend y usa CDN para sus dependencias.
+# No requiere instalación de paquetes Python o Node.js. 

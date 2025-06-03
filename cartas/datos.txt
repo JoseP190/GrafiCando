@@ -1,0 +1,283 @@
+[
+{
+  "id": 1,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "teorema del mono infinito: un mono tecleando al azar en una máquina de escribir eventualmente escribirá las obras completas de Shakespeare si tiene tiempo infinito. ¡Un ejemplo de la probabilidad teórica en acción!",
+  "imagenDelantera": "https://i.postimg.cc/vmPB2wdC/pagina-1-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 2,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "La palabra \"estadística\" proviene del latín status, que significa \"estado\". Originalmente, la estadística se utilizaba para recolectar datos sobre los estados, como censos o impuestos.",
+  "imagenDelantera": "https://i.postimg.cc/nzCL6SFr/pagina-2-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 3,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "El gráfico de barras: Fue inventado por William Playfair en 1786, uno de los pioneros en la visualización de datos.",
+  "imagenDelantera": "https://i.postimg.cc/3NGxwyDH/pagina-3-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 4,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "El efecto del cumpleaños: En un grupo de tan solo 23 personas, hay un 50% de probabilidad de que al menos dos personas compartan el mismo cumpleaños. Este hecho contraintuitivo demuestra cómo la estadística puede desafiar nuestra intuición.",
+  "imagenDelantera": "https://i.postimg.cc/TY8P4cZ2/pagina-4-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 5,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "En 1900, el estadístico Karl Pearson lanzó una moneda al aire 24,000 veces para comprobar la ley de los grandes números. Registró 12,012 caras y 11,988 cruces, mostrando cómo los resultados se acercan a una probabilidad del 50/50 en muestras grandes.",
+  "imagenDelantera": "https://i.postimg.cc/4dq3Zvy5/pagina-5-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 6,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "Paradoja de Banach-Tarski: Afirma que es posible dividir una esfera en un número finito de piezas, reorganizarlas, y obtener dos esferas idénticas a la original. Aunque parece imposible, se basa en la teoría de conjuntos y solo es válido en matemáticas puras, no en el mundo físico.",
+  "imagenDelantera": "https://i.postimg.cc/y63djGpr/pagina-6-img-1.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 7,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "El hexágono es el más eficiente: Las abejas utilizan hexágonos en sus panales porque esta forma es la que requiere menos cera para almacenar la mayor cantidad de miel, ¡una optimización matemática perfecta!",
+  "imagenDelantera": "https://i.postimg.cc/htctStDH/pagina-7-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 8,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "Paradoja del infinito: Hay diferentes tamaños de infinito. Por ejemplo, el conjunto de números reales es más grande que el conjunto de números naturales, aunque ambos son infinitos.",
+  "imagenDelantera": "https://i.postimg.cc/9ffX7gqb/pagina-8-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 9,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "El código binario: Toda la tecnología moderna se basa en matemáticas. Los dispositivos electrónicos usan el sistema binario (1 y 0) para procesar y almacenar información.",
+  "imagenDelantera": "https://i.postimg.cc/rwjFz2zz/pagina-9-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 10,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "El 0 y la nada: El número cero fue inventado en la antigua India, pero su existencia revolucionó las matemáticas. A pesar de que representa \"nada\", permite cálculos avanzados y sistemas numéricos.",
+  "imagenDelantera": "https://i.postimg.cc/5tk4q5BV/pagina-10-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 11,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "El pentágono perfecto: Las estrellas de mar tienen cinco brazos dispuestos en un patrón de pentágono. Esta forma es muy simétrica y aparece en geometría y la naturaleza.",
+  "imagenDelantera": "https://i.postimg.cc/d3GJYzzs/pagina-11-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 12,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "Los triángulos son fuertes: En construcción, los triángulos son la forma más estable. Por eso, muchas estructuras, como los puentes, están llenas de triángulos para garantizar su estabilidad.",
+  "imagenDelantera": "https://i.postimg.cc/G28cMBKs/pagina-12-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 13,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "El 12 en todas partes: El número 12 aparece en muchas culturas y sistemas. Tenemos 12 meses, 12 signos zodiacales, 12 horas en un reloj y docenas en la cocina.",
+  "imagenDelantera": "https://i.postimg.cc/RFkv2Mpp/pagina-13-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 14,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "El número perfecto: El número 6 es considerado \"perfecto\" porque sus divisores (1, 2 y 3) suman el mismo número: 6. Otro ejemplo de número perfecto es 28.",
+  "imagenDelantera": "https://i.postimg.cc/xTy9FVvg/pagina-14-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 15,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "La Cinta de Möbius: La cinta de Möbius tiene solo un lado y un borde. Si intentas recorrerla, nunca llegas a un final porque estás caminando continuamente sobre la misma superficie.",
+  "imagenDelantera": "https://i.postimg.cc/qBKJy3gP/pagina-15-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 16,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "El calendario de los mayas: Los matemáticos mayas crearon un calendario basado en ciclos astronómicos precisos y complejos. Su sistema numérico, que incluía el uso del número cero, fue uno de los más avanzados de la antigüedad.",
+  "imagenDelantera": "https://i.postimg.cc/yYzVP8Zk/pagina-16-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 17,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "Hace más de 4000 años, los babilonios ya tenían tablas de multiplicar en base 60, lo que les permitió realizar cálculos astronómicos avanzados. El legado de esta base se puede ver en nuestra medición del tiempo (60 segundos por minuto) y los ángulos (360 grados).",
+  "imagenDelantera": "https://i.postimg.cc/HkYdqv3m/pagina-17-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 18,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "El origen del símbolo de igualdad: El símbolo \"=\" fue introducido por el matemático galés Robert Recorde en 1557 en su libro \"The Whetstone of Witte\". Recorde lo eligió porque \"dos cosas no pueden ser más iguales que dos líneas paralelas\".",
+  "imagenDelantera": "https://i.postimg.cc/Jhtmny9d/pagina-18-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 19,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "Sophie Germain (1776-1831) fue una pionera en matemáticas que se hizo pasar por un estudiante varón, \"Monsieur LeBlanc\", para presentar sus trabajos. Conocida por sus contribuciones a la teoría de números y la elasticidad, es un símbolo del avance de las mujeres en matemáticas.",
+  "imagenDelantera": "https://i.postimg.cc/kgTqqNhb/pagina-19-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 20,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "Los fractales en la naturaleza: Formas fractales, como la de los copos de nieve y los helechos, tienen propiedades matemáticas fascinantes. Son figuras autosemejantes, lo que significa que se repiten en diferentes escalas.",
+  "imagenDelantera": "https://i.postimg.cc/fTZNdqGd/pagina-20-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 21,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "Pi es infinito: Pi (3.14159...) es un número irracional, lo que significa que sus dígitos nunca terminan ni se repiten. Hasta ahora, hemos calculado trillones de dígitos sin encontrar un patrón.",
+  "imagenDelantera": "https://i.postimg.cc/7PS4frWD/pagina-21-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 23,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto":"Tartaglia y la ecuación cúbica: Tartaglia, un matemático italiano, resolvió la ecuación cúbica en secreto durante una competencia pública. Su método fue filtrado por Gerolamo Cardano, quien lo publicó sin darle el crédito debido.",
+  "imagen":"",
+  "imagenDelantera": "https://i.postimg.cc/s28zZjzf/pagina-22-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 24,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto":"Hipatia, mártir de las matemáticas: Hipatia de Alejandría fue una destacada matemática y filósofa que enseñó geometría y astronomía en el siglo IV, hasta que fue asesinada por su influencia intelectual y religiosa.",
+  "imagen":"",
+  "imagenDelantera": "https://i.postimg.cc/NMHc63G6/pagina-23-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id":25,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto":"El juego de mesa más caro: Un tablero de Monopoly hecho de oro macizo, con rubíes y diamantes en las propiedades, fue vendido por más de $2 millones, convirtiéndose en el juego de mesa más caro de la historia.",
+  "imagen":"",
+  "imagenDelantera": "https://i.postimg.cc/MHJ8d9Xh/pagina-24-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id":26,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "El récord de Monopoly: El juego de Monopoly más largo duró 70 días. Para evitar sesiones eternas, se han desarrollado versiones de \"Monopoly Rápido\" con reglas más cortas.",
+  "imagen": "",
+  "imagenDelantera": "",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 27,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto":"Las versiones temáticas de Monopoly: Existen más de 300 versiones temáticas de Monopoly, desde versiones inspiradas en Star Wars o Game of Thrones hasta ediciones locales de ciudades como Nueva York o Londres.",
+  "imagen":"",
+  "imagenDelantera": "",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 28,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "Los primeros tableros de juego: Los tableros más antiguos se han encontrado en el Medio Oriente. Uno de los juegos más antiguos conocidos, \"El Juego Real de Ur\", data de hace más de 4,500 años.",
+  "imagen": "",
+  "imagenDelantera": "https://i.postimg.cc/mk3Wq7Hh/pagina-27-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 29,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "Uno y la falsa regla: Muchos jugadores creen que pueden terminar una partida de Uno con una carta de acción, como un \"+2\" o un \"+4\". Sin embargo, las reglas oficiales indican que no se puede.",
+  "imagen": "",
+  "imagenDelantera": "https://i.postimg.cc/jdXr4QTF/pagina-28-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 30,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto":"Los juegos de mesa en la Edad Media: Durante la Edad Media, los juegos de mesa como el ajedrez y el backgammon eran extremadamente populares entre la nobleza, mientras que los campesinos jugaban a juegos más simples como el alquerque.",
+  "imagen":"",
+  "imagenDelantera": "https://i.postimg.cc/BnnfYLQQ/pagina-29-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 31,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "El nombre de Monopoly: El nombre Monopoly hace referencia al término económico \"monopolio\", que describe el control total de una industria o mercado, lo que refleja el objetivo del juego de arruinar a los oponentes.",
+  "imagen": "",
+  "imagenDelantera": "https://i.postimg.cc/52KdZ465/pagina-30-img-1.jpg",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 32,
+  "nombre": "Dato curioso",
+  "tipo": "Dato curioso",
+  "texto": "Jenga y su origen africano: El nombre Jenga proviene del verbo swahili \"kujenga\", que significa \"construir\". Fue inventado por Leslie Scott, quien creció en África jugando con bloques de madera.",
+  "imagen": "",
+  "imagenDelantera": "",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

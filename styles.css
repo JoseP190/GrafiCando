@@ -4150,3 +4150,282 @@
     0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
     50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
 }
+
+/* Estilos para el menú de prohibición */
+.prohibicion-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 10002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.prohibicion-menu {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+    color: white;
+    text-align: center;
+    animation: slideInUp 0.4s ease-out;
+}
+
+.prohibicion-menu h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.prohibicion-menu p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.prohibicion-menu button {
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.prohibicion-menu button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.prohibicion-menu button:active {
+    transform: translateY(0);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .prohibicion-menu {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .prohibicion-menu h2 {
+        font-size: 1.5rem;
+    }
+    
+    .prohibicion-menu p {
+        font-size: 1rem;
+    }
+    
+    .prohibicion-menu button {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* Animaciones adicionales para el menú de prohibición */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Estilos adicionales para el contador */
+#prohibicionContador {
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Efectos hover para los botones */
+.prohibicion-menu button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.prohibicion-menu button:active {
+    transform: translateY(0);
+}
+
+/* Estilos para la barra de progreso */
+.prohibicion-menu .barra-progreso {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.prohibicion-menu .progreso {
+    height: 100%;
+    background: #ffd700;
+    transition: width 1s linear;
+}
+
+/* --- MEJORAS RESPONSIVAS PARA LA BARRA DE JUGADORES --- */
+
+@media (max-width: 1024px) {
+  .panel-jugadores {
+    min-width: 220px;
+    max-width: 98vw;
+    padding: 1rem;
+  }
+  .jugador-avatar {
+    width: 32px;
+    height: 32px;
+  }
+  .jugador-nombre {
+    font-size: 0.95rem;
+  }
+  .jugador-puntuacion {
+    font-size: 0.85rem;
+  }
+  .jugador-ranking {
+    font-size: 0.8rem;
+    min-width: 1.5rem;
+  }
+  .btn-remover-jugador {
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .panel-jugadores {
+    padding: 0.7rem;
+    border-radius: 0.7rem;
+  }
+  .panel-titulo {
+    font-size: 1.1rem;
+  }
+  .turno-actual {
+    font-size: 0.95rem;
+    padding: 0.7rem;
+    border-radius: 0.7rem;
+  }
+  .jugador-item {
+    padding: 0.5rem 0.4rem;
+    gap: 0.4rem;
+    border-radius: 0.7rem;
+  }
+  .jugador-avatar {
+    width: 26px;
+    height: 26px;
+    border-width: 2px;
+  }
+  .jugador-nombre {
+    font-size: 0.85rem;
+  }
+  .jugador-puntuacion {
+    font-size: 0.75rem;
+  }
+  .jugador-ranking {
+    font-size: 0.7rem;
+    min-width: 1.2rem;
+  }
+  .comodines-inventario {
+    font-size: 0.7rem;
+  }
+  .btn-remover-jugador {
+    width: 15px;
+    height: 15px;
+    font-size: 0.6rem;
+    right: 2px;
+    top: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel-jugadores {
+    padding: 0.4rem;
+    border-radius: 0.4rem;
+  }
+  .panel-titulo {
+    font-size: 0.95rem;
+  }
+  .turno-actual {
+    font-size: 0.8rem;
+    padding: 0.4rem;
+    border-radius: 0.4rem;
+  }
+  .jugador-item {
+    padding: 0.3rem 0.2rem;
+    gap: 0.2rem;
+    border-radius: 0.4rem;
+  }
+  .jugador-avatar {
+    width: 18px;
+    height: 18px;
+    border-width: 1px;
+  }
+  .jugador-nombre {
+    font-size: 0.7rem;
+  }
+  .jugador-puntuacion {
+    font-size: 0.6rem;
+  }
+  .jugador-ranking {
+    font-size: 0.6rem;
+    min-width: 1rem;
+  }
+  .comodines-inventario {
+    font-size: 0.6rem;
+  }
+  .btn-remover-jugador {
+    width: 12px;
+    height: 12px;
+    font-size: 0.5rem;
+    right: 1px;
+    top: 1px;
+  }
+}
+
+/* Ajuste para que los iconos de comodines no sean gigantes */
+.comodines-inventario img, .comodines-inventario svg {
+  max-width: 18px;
+  max-height: 18px;
+  vertical-align: middle;
+}
+@media (max-width: 768px) {
+  .comodines-inventario img, .comodines-inventario svg {
+    max-width: 13px;
+    max-height: 13px;
+  }
+}
+@media (max-width: 480px) {
+  .comodines-inventario img, .comodines-inventario svg {
+    max-width: 10px;
+    max-height: 10px;
+  }
+}

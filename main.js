@@ -275,6 +275,12 @@ function crearImagenesCartas(carta) {
 }
 
 function sacarCarta(tipoMazo) {
+    // ===== VALIDACIÓN: DADO TIRO =====
+    if (!dadoTiradoEnTurno) {
+        mostrarMensaje('⛔ Debes tirar el dado antes de sacar una carta.', 'error');
+        return;
+    }
+    
     // ===== VALIDACIÓN: SOLO UNA CARTA POR TURNO =====
     if (cartaSacadaEnTurno) {
         mostrarMensaje('⛔ Ya sacaste una carta en este turno. Espera tu siguiente turno.', 'error');
@@ -301,7 +307,7 @@ function sacarCarta(tipoMazo) {
     preguntaRespondida = false;
 
     const indiceAleatorio = Math.floor(Math.random() * mazos[tipoMazo].length);
-    const carta = mazos[tipoMazo].splice(indiceAleatorio, 1)[0]; // Remover carta del mazo
+    const carta = mazos[tipoMazo].splice(indiceAleatorio, 1)[0];
     
     // ===== LÓGICA ESPECIAL PARA COMODINES =====
     if (tipoMazo === 'comodines') {
@@ -708,6 +714,9 @@ let preguntaRespondida = false;
 
 // Variable para controlar una carta por turno
 let cartaSacadaEnTurno = false;
+
+// Variable para controlar si el dado ha sido tirado en el turno actual
+let dadoTiradoEnTurno = false;
 
 // Variables para el sistema de prohibición/intercepción de comodines
 let comodinEnProceso = null;
@@ -1149,6 +1158,12 @@ function reordenarEnPartida() {
 function siguienteTurno() {
     console.log('🎮 DEBUG siguienteTurno(): INICIANDO función');
     
+    // Resetear estado del dado
+    dadoTiradoEnTurno = false;
+    
+    // Deshabilitar acciones del juego hasta que se tire el dado
+    deshabilitarAccionesJuego();
+    
     // Reanudar turno (permitir sacar una nueva carta)
     reanudarTurno();
     
@@ -1175,6 +1190,9 @@ function siguienteTurno() {
     
     console.log('🎮 DEBUG siguienteTurno(): Llamando mostrarPopupTurno()');
     mostrarPopupTurno();
+    
+    // Mostrar mensaje para tirar el dado
+    mostrarMensaje('🎲 ¡Tira el dado para comenzar tu turno!', 'info');
     
     console.log('🎮 DEBUG siguienteTurno(): FINALIZANDO función');
 }
@@ -1394,6 +1412,20 @@ function lanzarDadoPopup() {
             dadoCube.style.animation = 'shake 0.5s ease-in-out';
             setTimeout(() => {
                 dadoCube.style.animation = '';
+                
+                // Marcar que el dado ha sido tirado en este turno
+                dadoTiradoEnTurno = true;
+                
+                // Habilitar acciones del juego
+                habilitarAccionesJuego();
+                
+                // Mostrar mensaje de éxito
+                mostrarMensaje('¡Dado tirado! Puedes continuar con tu turno.', 'success');
+                
+                // Cerrar el popup del dado después de un breve delay
+                setTimeout(() => {
+                    cerrarPopupDado();
+                }, 4000);
             }, 500);
         }, 200);
         
@@ -1574,9 +1606,14 @@ function simplificarNombreComodin(nombre) {
 
 // Función para continuar sin usar comodín
 function continuarSinComodin() {
+    // Cerrar popup de turno
     cerrarPopupTurno();
-    // Asegurar que los mazos estén habilitados para el nuevo turno
-    habilitarMazos();
+    
+    // Pequeño delay para que se cierre suavemente el popup de turno
+    setTimeout(() => {
+        // Abrir popup del dado automáticamente
+        abrirPopupDado();
+    }, 300);
 }
 
 function cerrarPopupTurno() {
@@ -3651,37 +3688,239 @@ function aplicarConstruirComodin(nombreJugador, carta) {
     ).length;
     
     if (copiasConstruir < 2) {
-        mostrarMensaje('Necesitas 2 copias de "Construyendo el Comodín" para usarlo', 'info');
+        mostrarMensaje('Necesitas 2 cartas iguales para usar este comodín.', 'info');
         return;
     }
     
-    // Remover 2 copias del inventario
-    let removidas = 0;
-    for (let i = inventario.length - 1; i >= 0 && removidas < 2; i--) {
-        if (inventario[i].nombre.toLowerCase() === 'construyendo el comodín') {
-            inventario.splice(i, 1);
-            removidas++;
+    // Mostrar menú de prohibición
+    mostrarMenuProhibicion(nombreJugador, () => {
+        // Callback que se ejecuta si no se prohibió el comodín
+        // Remover 2 copias del inventario
+        let removidas = 0;
+        for (let i = inventario.length - 1; i >= 0 && removidas < 2; i--) {
+            if (inventario[i].nombre.toLowerCase() === 'construyendo el comodín') {
+                inventario.splice(i, 1);
+                removidas++;
+            }
         }
-    }
-    
-    // Obtener comodín aleatorio del mazo
-    if (mazos.comodines.length > 0) {
-        const indiceAleatorio = Math.floor(Math.random() * mazos.comodines.length);
-        const nuevoComodin = mazos.comodines.splice(indiceAleatorio, 1)[0];
         
-        // Agregar al inventario
-        inventario.push(nuevoComodin);
+        // Obtener comodín aleatorio del mazo
+        if (mazos.comodines.length > 0) {
+            const indiceAleatorio = Math.floor(Math.random() * mazos.comodines.length);
+            const nuevoComodin = mazos.comodines.splice(indiceAleatorio, 1)[0];
+            
+            // Agregar al inventario
+            inventario.push(nuevoComodin);
+            
+            mostrarMensaje(`${nombreJugador} construyó un nuevo comodín: ${simplificarNombreComodin(nuevoComodin.nombre)}! 🔨`, 'success');
+        } else {
+            mostrarMensaje('No hay más comodines en el mazo para construir', 'warning');
+        }
         
-        mostrarMensaje(`${nombreJugador} construyó un nuevo comodín: ${simplificarNombreComodin(nuevoComodin.nombre)}! 🔨`, 'success');
-    } else {
-        mostrarMensaje('No hay más comodines en el mazo para construir', 'warning');
-    }
+        // Actualizar UI y continuar
+        actualizarPanelJugadores();
+        setTimeout(() => {
+            cerrarPopupTurno();
+        }, 1500);
+    });
+}
+
+// Función para mostrar el menú de prohibición
+function mostrarMenuProhibicion(nombreJugador, callback) {
+    // Crear overlay para el menú de prohibición
+    const overlay = document.createElement('div');
+    overlay.className = 'prohibicion-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 10002;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease-out;
+    `;
     
-    // Actualizar UI y continuar
-    actualizarPanelJugadores();
-    setTimeout(() => {
-        cerrarPopupTurno();
-    }, 1500);
+    // Crear contenedor del menú
+    const menu = document.createElement('div');
+    menu.className = 'prohibicion-menu';
+    menu.style.cssText = `
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        width: 90%;
+        color: white;
+        text-align: center;
+        animation: slideInUp 0.4s ease-out;
+    `;
+    
+    // Crear título
+    const titulo = document.createElement('h2');
+    titulo.textContent = '¡Te lo prohíbo!';
+    titulo.style.cssText = `
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: white;
+    `;
+    
+    // Crear mensaje
+    const mensaje = document.createElement('p');
+    mensaje.textContent = `${nombreJugador} está intentando construir un comodín. ¿Quieres prohibirlo?`;
+    mensaje.style.cssText = `
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        color: rgba(255, 255, 255, 0.9);
+    `;
+    
+    // Crear contenedor del contador
+    const contadorContainer = document.createElement('div');
+    contadorContainer.style.cssText = `
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    `;
+    
+    // Crear contador
+    const contador = document.createElement('div');
+    contador.id = 'prohibicionContador';
+    contador.style.cssText = `
+        font-size: 2rem;
+        font-weight: bold;
+        color: #ffd700;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    `;
+    
+    // Crear barra de progreso
+    const barraProgreso = document.createElement('div');
+    barraProgreso.style.cssText = `
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+        margin-top: 1rem;
+        overflow: hidden;
+    `;
+    
+    const progreso = document.createElement('div');
+    progreso.style.cssText = `
+        width: 100%;
+        height: 100%;
+        background: #ffd700;
+        transition: width 1s linear;
+    `;
+    
+    barraProgreso.appendChild(progreso);
+    contadorContainer.appendChild(contador);
+    contadorContainer.appendChild(barraProgreso);
+    
+    // Crear botones
+    const botonesContainer = document.createElement('div');
+    botonesContainer.style.cssText = `
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    `;
+    
+    const btnProhibir = document.createElement('button');
+    btnProhibir.textContent = '¡Prohibir!';
+    btnProhibir.style.cssText = `
+        background: #ff4757;
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex: 1;
+        max-width: 200px;
+    `;
+    
+    const btnPermitir = document.createElement('button');
+    btnPermitir.textContent = 'Permitir';
+    btnPermitir.style.cssText = `
+        background: #2ed573;
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex: 1;
+        max-width: 200px;
+    `;
+    
+    // Agregar elementos al DOM
+    botonesContainer.appendChild(btnProhibir);
+    botonesContainer.appendChild(btnPermitir);
+    menu.appendChild(titulo);
+    menu.appendChild(mensaje);
+    menu.appendChild(contadorContainer);
+    menu.appendChild(botonesContainer);
+    overlay.appendChild(menu);
+    document.body.appendChild(overlay);
+    
+    // Configurar contador regresivo
+    let tiempoRestante = 20;
+    contador.textContent = tiempoRestante;
+    
+    // Función para actualizar el contador y la barra de progreso
+    const actualizarContador = () => {
+        tiempoRestante--;
+        contador.textContent = tiempoRestante;
+        progreso.style.width = `${(tiempoRestante / 20) * 100}%`;
+        
+        // Efecto visual cuando quedan 5 segundos o menos
+        if (tiempoRestante <= 5) {
+            contador.style.color = '#ff4757';
+            contador.style.animation = 'pulse 1s infinite';
+        }
+    };
+    
+    // Actualizar inmediatamente
+    actualizarContador();
+    
+    // Configurar intervalo
+    const interval = setInterval(() => {
+        actualizarContador();
+        
+        if (tiempoRestante <= 0) {
+            clearInterval(interval);
+            overlay.style.animation = 'fadeOut 0.5s ease-out forwards';
+            setTimeout(() => {
+                overlay.remove();
+                callback(); // Ejecutar callback si se acaba el tiempo
+            }, 500);
+        }
+    }, 1000);
+    
+    // Configurar botones
+    btnProhibir.onclick = () => {
+        clearInterval(interval);
+        overlay.style.animation = 'fadeOut 0.5s ease-out forwards';
+        setTimeout(() => {
+            overlay.remove();
+            mostrarMensaje('¡El comodín ha sido prohibido!', 'warning');
+        }, 500);
+    };
+    
+    btnPermitir.onclick = () => {
+        clearInterval(interval);
+        overlay.style.animation = 'fadeOut 0.5s ease-out forwards';
+        setTimeout(() => {
+            overlay.remove();
+            callback(); // Ejecutar callback si se permite
+        }, 500);
+    };
 }
 
 // ========== SELECTOR DE JUGADORES PARA COMODINES ==========
@@ -4543,7 +4782,7 @@ function mostrarPopupProhibicion(jugadoresConProhibicion, comodin, jugadorUsando
             margin-top: 1rem;
             animation: pulse 1s infinite;
         ">
-            Tiempo restante: <span id="tiempoRestanteProhibicion">5</span> segundos
+            Tiempo restante: <span id="tiempoRestanteProhibicion">20</span> segundos
         </div>
     `;
     
@@ -4569,8 +4808,8 @@ function mostrarPopupProhibicion(jugadoresConProhibicion, comodin, jugadorUsando
         };
     });
     
-    // Contador de tiempo (5 segundos para decidir)
-    let tiempoRestante = 5;
+    // Contador de tiempo (20 segundos para decidir)
+    let tiempoRestante = 20;
     const spanTiempo = document.getElementById('tiempoRestanteProhibicion');
     
     tiempoLimiteProhibicion = setInterval(() => {
@@ -4578,7 +4817,7 @@ function mostrarPopupProhibicion(jugadoresConProhibicion, comodin, jugadorUsando
         if (spanTiempo) {
             spanTiempo.textContent = tiempoRestante;
         }
-        
+ 
         if (tiempoRestante <= 0) {
             // Tiempo agotado, permitir automáticamente
             permitirComodin();
@@ -4620,11 +4859,11 @@ function ejecutarProhibicion(jugadorProhibidor) {
         // Mostrar mensaje de prohibición
         mostrarMensaje(`🚫 ${jugadorProhibidor} prohibió el comodín de ${jugadorUsandoComodin}!`, 'error');
         
-        // Devolver el comodín original al inventario del usuario
-        if (!inventariosComodines[jugadorUsandoComodin]) {
-            inventariosComodines[jugadorUsandoComodin] = [];
+        // Devolver el comodín original al mazo de comodines (NO al inventario del usuario)
+        if (!mazos.comodines) {
+            mazos.comodines = [];
         }
-        inventariosComodines[jugadorUsandoComodin].push(comodinEnProceso);
+        mazos.comodines.push(comodinEnProceso);
         
         // Actualizar panel
         actualizarPanelJugadores();
@@ -4769,6 +5008,57 @@ function ejecutarEfectoComodin(carta, nombreJugador) {
         default:
             mostrarMensaje('Tipo de comodín no reconocido', 'error');
             return;
+    }
+}
+
+// Función para habilitar las acciones del juego
+function habilitarAccionesJuego() {
+    // Habilitar botones de mazos
+    document.querySelectorAll('.mazo').forEach(mazo => {
+        mazo.style.pointerEvents = 'auto';
+        mazo.style.opacity = '1';
+    });
+    
+    // Habilitar botones de comodines
+    document.querySelectorAll('.btn-comodin').forEach(btn => {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    });
+    
+    // Habilitar botón de siguiente turno
+    const btnSiguienteTurno = document.querySelector('.btn-siguiente-turno');
+    if (btnSiguienteTurno) {
+        btnSiguienteTurno.disabled = false;
+        btnSiguienteTurno.style.opacity = '1';
+    }
+}
+
+// Función para deshabilitar las acciones del juego
+function deshabilitarAccionesJuego() {
+    // Deshabilitar botones de mazos
+    document.querySelectorAll('.mazo').forEach(mazo => {
+        mazo.style.pointerEvents = 'none';
+        mazo.style.opacity = '0.5';
+    });
+    
+    // Deshabilitar botones de comodines
+    document.querySelectorAll('.btn-comodin').forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+    });
+    
+    // Deshabilitar botón de siguiente turno
+    const btnSiguienteTurno = document.querySelector('.btn-siguiente-turno');
+    if (btnSiguienteTurno) {
+        btnSiguienteTurno.disabled = true;
+        btnSiguienteTurno.style.opacity = '0.5';
+    }
+    
+    // Asegurar que el botón del dado esté visible y accesible
+    const dadoTrigger = document.querySelector('.dado-trigger');
+    if (dadoTrigger) {
+        dadoTrigger.style.pointerEvents = 'auto';
+        dadoTrigger.style.opacity = '1';
     }
 }
 

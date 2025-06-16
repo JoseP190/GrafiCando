@@ -27,7 +27,7 @@
   "id": 4,
   "nombre": "¡reversa!",
   "tipo": "Comodín",
-  "texto": "cambia el orden de los turnos (se usa al final de tú turno) (ejemplo: al final de tu turno utilizas la carta y le tocará al jugador anterior a tí)",
+ "texto": "cambia el orden de los turnos (utilizas la carta y luego le tocará al jugador anterior a tí)",
   "imagenDelantera": "https://i.postimg.cc/NFPjT6F0/Reversa.png",
   "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
 },
@@ -83,7 +83,7 @@
   "id": 11,
   "nombre": "¡reversa!",
   "tipo": "Comodín",
-  "texto": "cambia el orden de los turnos (se usa al final de tú turno) (ejemplo: al final de tu turno utilizas la carta y le tocará al jugador anterior a tí)",
+  "texto": "cambia el orden de los turnos (utilizas la carta y luego le tocará al jugador anterior a tí)",
   "imagenDelantera": "https://i.postimg.cc/NFPjT6F0/Reversa.png",
   "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
 },
@@ -139,7 +139,7 @@
   "id": 18,
   "nombre": "¡reversa!",
   "tipo": "Comodín",
-  "texto": "cambia el orden de los turnos (se usa al final de tú turno) (ejemplo: al final de tu turno utilizas la carta y le tocará al jugador anterior a tí)",
+  "texto": "cambia el orden de los turnos (utilizas la carta y luego le tocará al jugador anterior a tí)",
   "imagenDelantera": "https://i.postimg.cc/NFPjT6F0/Reversa.png",
   "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
 },
@@ -157,6 +157,191 @@
   "tipo": "Comodín",
   "texto": "utiliza esta carta para librarte de la cárcel",
   "imagenDelantera": "https://i.postimg.cc/TwVbr4v3/Escapa-De-La-Carcel.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 21,
+  "nombre": "¡NO!,¡TE LO PROHÍBO!",
+  "tipo": "Comodín",
+  "texto": "CANCELA EL COMODÍN DE OTRO JUGADOR (ESTA CARTA SE DEBE JUGAR APENAS UN JUGADOR JUEGUE UN COMODÍN y luego se descarta)",
+  "imagenDelantera": "https://i.postimg.cc/RFL33Jw3/No-Te-Lo-Prohibo.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 22,
+  "nombre": "¡ganas un punto gratis!",
+  "tipo": "Comodín",
+  "texto": "Añade un punto a tú puntuación total (ejemplo: si tienes 3 puntos ahora tienes un punto más, es decir, 4 puntos)",
+  "imagenDelantera": "https://i.postimg.cc/rFF4rjnq/Punto-Gratis.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 23,
+  "nombre": "¡resta un punto a un contrincante!",
+  "tipo": "Comodín",
+  "texto": "resta un punto a la puntuación total de otro jugador (ejemplo: pepito tiene 3 puntos, juegas esta carta contra él y ahora tendrá 2 puntos. Luego, esta carta se descarta)",
+  "imagenDelantera": "https://i.postimg.cc/j5Mx0Hzh/Resta-Punto-AContrincante.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 24,
+  "nombre": "¡reversa!",
+  "tipo": "Comodín",
+  "texto": "cambia el orden de los turnos (utilizas la carta y luego le tocará al jugador anterior a tí)",
+  "imagenDelantera": "https://i.postimg.cc/NFPjT6F0/Reversa.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 25,
+  "nombre": "¡eres un ladrón de comodines!",
+  "tipo": "Comodín",
+  "texto": "roba un comodín al azar de otro jugador (el jugador debe tener comodines) Luego de jugar esta carta debe ser descartada",
+  "imagenDelantera": "https://i.postimg.cc/R0fJBDFL/Ladron-De-Comodines.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 26,
+  "nombre": "ESCAPA DE LA CÁRCEL",
+  "tipo": "Comodín",
+  "texto": "utiliza esta carta para librarte de la cárcel",
+  "imagenDelantera": "https://i.postimg.cc/TwVbr4v3/Escapa-De-La-Carcel.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 27,
+  "nombre": "construyendo el comodín",
+  "tipo": "Comodín",
+  "texto": "Junta 2 copias de esta carta y juegalas para obtener un comodín Luego de jugar las 2 cartas estas deben ser descartadas",
+  "imagenDelantera": "https://i.postimg.cc/JnD6MmXd/Construyendo-Comodin.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 28,
+  "nombre": "¡NO!,¡TE LO PROHÍBO!",
+  "tipo": "Comodín",
+  "texto": "CANCELA EL COMODÍN DE OTRO JUGADOR (ESTA CARTA SE DEBE JUGAR APENAS UN JUGADOR JUEGUE UN COMODÍN y luego se descarta)",
+  "imagenDelantera": "https://i.postimg.cc/RFL33Jw3/No-Te-Lo-Prohibo.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 29,
+  "nombre": "¡ganas un punto gratis!",
+  "tipo": "Comodín",
+  "texto": "Añade un punto a tú puntuación total (ejemplo: si tienes 3 puntos ahora tienes un punto más, es decir, 4 puntos)",
+  "imagenDelantera": "https://i.postimg.cc/rFF4rjnq/Punto-Gratis.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 30,
+  "nombre": "¡resta un punto a un contrincante!",
+  "tipo": "Comodín",
+  "texto": "resta un punto a la puntuación total de otro jugador (ejemplo: pepito tiene 3 puntos, juegas esta carta contra él y ahora tendrá 2 puntos. Luego, esta carta se descarta)",
+  "imagenDelantera": "https://i.postimg.cc/j5Mx0Hzh/Resta-Punto-AContrincante.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 31,
+  "nombre": "¡reversa!",
+  "tipo": "Comodín",
+  "texto": "cambia el orden de los turnos (utilizas la carta y luego le tocará al jugador anterior a tí)",
+  "imagenDelantera": "https://i.postimg.cc/NFPjT6F0/Reversa.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 32,
+  "nombre": "¡eres un ladrón de comodines!",
+  "tipo": "Comodín",
+  "texto": "roba un comodín al azar de otro jugador (el jugador debe tener comodines) Luego de jugar esta carta debe ser descartada",
+  "imagenDelantera": "https://i.postimg.cc/R0fJBDFL/Ladron-De-Comodines.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 33,
+  "nombre": "ESCAPA DE LA CÁRCEL",
+  "tipo": "Comodín",
+  "texto": "utiliza esta carta para librarte de la cárcel",
+  "imagenDelantera": "https://i.postimg.cc/TwVbr4v3/Escapa-De-La-Carcel.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 34,
+  "nombre": "construyendo el comodín",
+  "tipo": "Comodín",
+  "texto": "Junta 2 copias de esta carta y juegalas para obtener un comodín Luego de jugar las 2 cartas estas deben ser descartadas",
+  "imagenDelantera": "https://i.postimg.cc/JnD6MmXd/Construyendo-Comodin.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 35,
+  "nombre": "¡NO!,¡TE LO PROHÍBO!",
+  "tipo": "Comodín",
+  "texto": "CANCELA EL COMODÍN DE OTRO JUGADOR (ESTA CARTA SE DEBE JUGAR APENAS UN JUGADOR JUEGUE UN COMODÍN y luego se descarta)",
+  "imagenDelantera": "https://i.postimg.cc/RFL33Jw3/No-Te-Lo-Prohibo.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 36,
+  "nombre": "¡ganas un punto gratis!",
+  "tipo": "Comodín",
+  "texto": "Añade un punto a tú puntuación total (ejemplo: si tienes 3 puntos ahora tienes un punto más, es decir, 4 puntos)",
+  "imagenDelantera": "https://i.postimg.cc/rFF4rjnq/Punto-Gratis.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 37,
+  "nombre": "¡resta un punto a un contrincante!",
+  "tipo": "Comodín",
+  "texto": "resta un punto a la puntuación total de otro jugador (ejemplo: pepito tiene 3 puntos, juegas esta carta contra él y ahora tendrá 2 puntos. Luego, esta carta se descarta)",
+  "imagenDelantera": "https://i.postimg.cc/j5Mx0Hzh/Resta-Punto-AContrincante.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 38,
+  "nombre": "¡reversa!",
+  "tipo": "Comodín",
+  "texto": "cambia el orden de los turnos (utilizas la carta y luego le tocará al jugador anterior a tí)",
+  "imagenDelantera": "https://i.postimg.cc/NFPjT6F0/Reversa.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 39,
+  "nombre": "¡eres un ladrón de comodines!",
+  "tipo": "Comodín",
+  "texto": "roba un comodín al azar de otro jugador (el jugador debe tener comodines) Luego de jugar esta carta debe ser descartada",
+  "imagenDelantera": "https://i.postimg.cc/R0fJBDFL/Ladron-De-Comodines.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 40,
+  "nombre": "ESCAPA DE LA CÁRCEL",
+  "tipo": "Comodín",
+  "texto": "utiliza esta carta para librarte de la cárcel",
+  "imagenDelantera": "https://i.postimg.cc/TwVbr4v3/Escapa-De-La-Carcel.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 41,
+  "nombre": "construyendo el comodín",
+  "tipo": "Comodín",
+  "texto": "Junta 2 copias de esta carta y juegalas para obtener un comodín Luego de jugar las 2 cartas estas deben ser descartadas",
+  "imagenDelantera": "https://i.postimg.cc/JnD6MmXd/Construyendo-Comodin.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+{
+  "id": 42,
+  "nombre": "construyendo el comodín",
+  "tipo": "Comodín",
+  "texto": "Junta 2 copias de esta carta y juegalas para obtener un comodín Luego de jugar las 2 cartas estas deben ser descartadas",
+  "imagenDelantera": "https://i.postimg.cc/JnD6MmXd/Construyendo-Comodin.png",
+  "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
+},
+
+{
+  "id": 43,
+  "nombre": "construyendo el comodín",
+  "tipo": "Comodín",
+  "texto": "Junta 2 copias de esta carta y juegalas para obtener un comodín Luego de jugar las 2 cartas estas deben ser descartadas",
+  "imagenDelantera": "https://i.postimg.cc/JnD6MmXd/Construyendo-Comodin.png",
   "imagenTrasera": "https://ejemplo.com/imagen-trasera.png"
 }
 ]
